@@ -13,7 +13,7 @@ interface Video {
   id: number
   religion_id: number
   religion_name: string
-  religion_sub: string
+  religion_sub?: string
   speakers: Speaker[]
   topics: Topic[]
   video_id: string
@@ -34,7 +34,7 @@ interface Topic {
   name: string
 }
 
-const query = 'SELECT videos.*, religions.title_en religion_name, religion_branch.title_en religion_sub, author_id, firstname, lastname, topic_id, topics.title_en topic_name FROM videos INNER JOIN religions ON videos.religion_id = religions.id LEFT JOIN religion_branch ON videos.religion_branch_id = religion_branch.id LEFT JOIN video_topics ON videos.id = video_topics.video_id LEFT JOIN topics ON video_topics.topic_id = topics.id LEFT JOIN video_authors ON videos.id = video_authors.video_id LEFT JOIN authors ON video_authors.author_id = authors.id WHERE'
+const query = 'SELECT videos.*, religions.name religion_name, sub.name religion_sub, author_id, firstname, lastname, topic_id, topics.name topic_name FROM videos INNER JOIN religions ON videos.religion_id = religions.id LEFT JOIN religions sub ON videos.religion_branch_id = sub.id LEFT JOIN video_topics ON videos.id = video_topics.video_id LEFT JOIN topics ON video_topics.topic_id = topics.id LEFT JOIN video_authors ON videos.id = video_authors.video_id LEFT JOIN authors ON video_authors.author_id = authors.id WHERE'
 
 export interface Env {
   DB: D1Database
@@ -51,7 +51,7 @@ const handleResults = async (results: any): Promise<Video[]> => {
   let topics: number[] = []
 
   for (const v of results) {
-    const {author_id, created, firstname, id, lastname, religion_id, religion_name, religion_sub, topic_id, topic_name, video_id, video_length, video_start, video_title} = v
+    const {author_id, created, firstname, id, lastname, religion_branch_id, religion_id, religion_name, religion_sub, topic_id, topic_name, video_id, video_length, video_start, video_title} = v
 
     if (!videoIds.includes(id)) {
       videoIds.push(id)
@@ -63,19 +63,22 @@ const handleResults = async (results: any): Promise<Video[]> => {
         video_url += `?start=${video_start}`
       }
 
-      const video: Video = {
+      let video: Video = {
+        created,
         id,
-        video_title,
-        video_id,
-        video_url,
-        video_length,
-        video_image: `https://img.youtube.com/vi_webp/${video_id}/mqdefault.webp`,
         religion_id,
         religion_name,
-        religion_sub,
         speakers: [],
         topics: [],
-        created
+        video_id,
+        video_image: `https://img.youtube.com/vi_webp/${video_id}/mqdefault.webp`,
+        video_length,
+        video_title,
+        video_url
+      }
+
+      if (religion_branch_id && religion_branch_id !== religion_id) {
+        video.religion_sub = religion_sub
       }
 
       videos.push(video)
@@ -156,12 +159,8 @@ export default {
       case 'authors':
         if (requests.length === 3) {
           const id = Number(requests[2])
-          const {results} = await env.DB.prepare(`${query} video_authors.author_id = ?`).bind(id).bind(id).all()
-          if (!results?.length) {
-            return new Response('Video not found', {status: 404})
-          }
-          const videoArray = await handleResults(results)
-          return Response.json(videoArray)
+          const videos = await fetchVideos('video_authors.author_id', id, env)
+          return Response.json(videos)
         }
 
         return Response.json(await fetchData('authors', env))
@@ -170,12 +169,8 @@ export default {
       case 'topics':
         if (requests.length === 3) {
           const id = Number(requests[2])
-          const {results} = await env.DB.prepare(`${query} video_topics.topic_id = ?`).bind(id).bind(id).all()
-          if (!results?.length) {
-            return new Response('Video not found', {status: 404})
-          }
-          const videoArray = await handleResults(results)
-          return Response.json(videoArray)
+          const videos = await fetchVideos('video_topics.topic_id', id, env)
+          return Response.json(videos)
         }
 
         return Response.json(await fetchData('topics', env))
