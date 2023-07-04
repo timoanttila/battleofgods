@@ -1,0 +1,8 @@
+name = "battle_of_gods"
+main = "src/worker.ts"
+compatibility_date = "2023-05-18"
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "battle_of_gods"
+database_id = "7b9e1376-97b5-4aa5-bab3-1fa2cd7cc689"
