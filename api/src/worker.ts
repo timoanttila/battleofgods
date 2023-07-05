@@ -13,7 +13,8 @@ interface Video {
   id: number
   religion_id: number
   religion_name: string
-  religion_sub?: string
+  religion_sub_id?: number
+  religion_sub_name?: string
   speakers: Speaker[]
   topics: Topic[]
   video_id: string
@@ -78,7 +79,8 @@ const handleResults = async (results: any): Promise<Video[]> => {
       }
 
       if (religion_branch_id && religion_branch_id !== religion_id) {
-        video.religion_sub = religion_sub
+        video.religion_sub_id = religion_branch_id
+        video.religion_sub_name = religion_sub
       }
 
       videos.push(video)
