@@ -163,7 +163,7 @@ export default {
       id = 0,
       where = []
 
-    if (!requests[1] || !['videos', 'articles'].includes(requests[1])) {
+    if (!requests[1] || !['authors', 'religions', 'topics', 'videos'].includes(requests[1])) {
       return new Response(null, {status: 400})
     }
 
@@ -221,9 +221,9 @@ export default {
 
       case 'authors':
         const order = 'lastname, firstname ASC'
-        const name = url.searchParams.get('name')
-        if (name) {
-          const bind = `%${name}%`
+
+        if (url.searchParams.get('search')) {
+          const bind = `%${url.searchParams.get('search')}%`
           const {results} = await env.DB.prepare(`SELECT * FROM authors WHERE lastname LIKE ? OR firstname LIKE ? ORDER BY ${order}`).bind(bind, bind).all()
           return Response.json(results)
         }
