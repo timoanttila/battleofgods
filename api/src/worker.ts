@@ -111,19 +111,47 @@ const handleResults = async (results: any): Promise<Video[]> => {
   return videos
 }
 
-const fetchVideos = async (where: string, id: number, env: Env) => {
-  const {results} = await env.DB.prepare(`${query} ${where} = ? ORDER BY created DESC`).bind(id).all()
+const fetchVideos = async (env: Env, where: string, id: number, limit: number, offset: number) => {
+  const {results} = await env.DB.prepare(`${query} ${where} = ? ORDER BY created DESC LIMIT ${limit} OFFSET ${offset}`).bind(id).all()
   return await handleResults(results)
 }
 
-const fetchData = async (table: string, env: Env) => {
-  const {results} = await env.DB.prepare(`SELECT * FROM ${table} ORDER BY title_en ASC`).all()
+const fetchData = async (env: Env, table: string, order: string = 'name ASC') => {
+  const {results} = await env.DB.prepare(`SELECT * FROM ${table} ORDER BY ${order}`).all()
   return results
+}
+
+const queryCount = async (env: Env, table: string, where: string, id: number | string | null = null): Promise<number | false> => {
+  const query = `SELECT COUNT(id) AS total FROM ${table} WHERE ${where}`
+  const statement = env.DB.prepare(query)
+
+  const {results} = id !== null ? await statement.bind(id).all() : await statement.all()
+  if (!Array.isArray(results) || !results.length) {
+    return false
+  }
+
+  const {total} = results[0] as {total: number}
+  return total > 0 ? total : false
+}
+
+const metaNumbers = async (count: number, page: number, limit: number) => {
+  const pages = Math.ceil(count / limit)
+  return {
+    count,
+    limit,
+    page,
+    pages,
+    next: page < pages ? page + 1 : undefined,
+    prev: page > 1 ? page - 1 : undefined
+  }
 }
 
 export default {
   async fetch(request: Request, env: Env) {
     const url = new URL(request.url)
+    const pageSize = Number(url.searchParams.get('limit')) || 20
+    const pageNumber = Number(url.searchParams.get('page')) || 1
+    const offset = (pageNumber - 1) * pageSize
 
     const requests = url.pathname.split('/')
     switch (requests[1]) {
@@ -133,47 +161,91 @@ export default {
           const id = Number(q[2])
           const {results} = await env.DB.prepare(`${query} video_topics.video_id = ?`).bind(id).bind(id).all()
           if (!results?.length) {
-            return new Response('Video not found', {status: 404})
+            return new Response(null, {status: 204})
           }
+
           const videoArray = await handleResults(results)
           return Response.json(videoArray)
         }
 
-        const name = url.searchParams.get('name')
-        if (name) {
-          const {results} = await env.DB.prepare(`${query} video_title LIKE ? ORDER BY created DESC`).bind(`%${name}%`).all()
-          if (!results?.length) {
-            return new Response('Video not found', {status: 404})
+        const title = url.searchParams.get('name')
+        if (title) {
+          const bind = `%${title}%`
+          const count = await queryCount(env, 'videos', 'video_title LIKE ?', bind)
+
+          if (!count) {
+            return new Response(null, {status: 204})
           }
-          const videoArray = await handleResults(results)
-          return Response.json(videoArray)
+
+          const {results} = await env.DB.prepare(`${query} video_title LIKE ? ORDER BY created DESC LIMIT ${pageSize} OFFSET ${offset}`).bind(bind).all()
+          const videos = await handleResults(results)
+
+          return Response.json({
+            data: videos,
+            meta: await metaNumbers(count, pageNumber, pageSize)
+          })
         }
 
-        const religion = url.searchParams.get('religion')
-        if (!religion || !Number(religion)) {
+        const religion = Number(url.searchParams.get('religion'))
+        if (!religion) {
           return new Response('Religion not found', {status: 404})
         }
 
-        const videos = await fetchVideos('videos.religion_id', Number(religion), env)
-        return Response.json(videos)
+        const count = await queryCount(env, 'videos', 'videos.religion_id = ?', religion)
+        if (!count) {
+          return new Response(null, {status: 204})
+        }
+
+        const videos = await fetchVideos(env, 'videos.religion_id', religion, pageSize, offset)
+        return Response.json({
+          data: videos,
+          meta: await metaNumbers(count, pageNumber, pageSize)
+        })
       case 'authors':
         if (requests.length === 3) {
           const id = Number(requests[2])
-          const videos = await fetchVideos('video_authors.author_id', id, env)
-          return Response.json(videos)
+
+          const count = await queryCount(env, 'videos', 'video_authors.author_id = ?', id)
+          if (!count) {
+            return new Response(null, {status: 204})
+          }
+
+          const videos = await fetchVideos(env, 'video_authors.author_id', id, pageSize, offset)
+          return Response.json({
+            data: videos,
+            meta: await metaNumbers(count, pageNumber, pageSize)
+          })
         }
 
-        return Response.json(await fetchData('authors', env))
+        const order = 'lastname, firstname ASC'
+
+        const name = url.searchParams.get('name')
+        if (name) {
+          const bind = `%${name}%`
+          const {results} = await env.DB.prepare(`SELECT * FROM authors WHERE lastname LIKE ? OR firstname LIKE ? ORDER BY ${order}`).bind(bind, bind).all()
+          return Response.json(results)
+        }
+
+        return Response.json(await fetchData(env, 'authors', order))
       case 'religions':
-        return Response.json(await fetchData('religions', env))
+        return Response.json(await fetchData(env, 'religions'))
       case 'topics':
         if (requests.length === 3) {
           const id = Number(requests[2])
-          const videos = await fetchVideos('video_topics.topic_id', id, env)
-          return Response.json(videos)
+
+          const count = await queryCount(env, 'videos', 'video_topics.topic_id = ?', id)
+          if (!count) {
+            return new Response(null, {status: 204})
+          }
+
+          const videos = await fetchVideos(env, 'video_topics.topic_id', id, pageSize, offset)
+          return Response.json({
+            data: videos,
+            meta: await metaNumbers(count, pageNumber, pageSize)
+          })
         }
 
-        return Response.json(await fetchData('topics', env))
+        return Response.json(await fetchData(env, 'topics'))
     }
   }
 }
