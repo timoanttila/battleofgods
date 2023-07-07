@@ -59,7 +59,7 @@ const handleResults = async (results: any): Promise<Video[]> => {
       authors = []
       topics = []
 
-      let video_url = `https://www.youtube.com/embed/${video_id}`
+      let video_url = `https://www.youtube.com/watch?v=${video_id}`
       if (video_start) {
         video_url += `?start=${video_start}`
       }
@@ -119,13 +119,15 @@ const fetchData = async (env: Env, table: string, order: string = 'name ASC') =>
 }
 
 const queryCount = async (env: Env, table: string, where: string = '', binds: any[] | null = null, joins: string = ''): Promise<number> => {
-  let sql = `SELECT COUNT(${table}.id) AS total FROM ${table}`
+  let sql = `SELECT DISTINCT COUNT(${table}.id) AS total FROM ${table}`
   if (joins) {
     sql += ` ${joins}`
   }
   if (where && binds) {
     sql += ` ${where}`
   }
+
+  sql += ' GROUP BY videos.id'
 
   const statement = env.DB.prepare(sql)
 
@@ -209,7 +211,7 @@ export default {
           return new Response(null, {status: 204})
         }
 
-        const {results} = await env.DB.prepare(`${query} ${sqlWhere} LIMIT ${pageSize} OFFSET ${offset}`)
+        const {results} = await env.DB.prepare(`${query} ${sqlWhere} ORDER BY videos.created DESC LIMIT ${pageSize} OFFSET ${offset}`)
           .bind(...binds)
           .all()
         videos = await handleResults(results)
