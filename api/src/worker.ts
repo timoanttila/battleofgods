@@ -12,6 +12,7 @@ interface Video {
   created: string
   id: number
   religion_id: number
+  religion_name: string
   religion_sub_id?: number
   speakers: Speaker[]
   topics: Topic[]
@@ -33,7 +34,7 @@ interface Topic {
   name: string
 }
 
-const query = 'SELECT videos.*, author_id, firstname, lastname, topic_id, topics.name topic_name FROM videos INNER JOIN religions ON videos.religion_id = religions.id LEFT JOIN video_topics ON videos.id = video_topics.video_id LEFT JOIN topics ON video_topics.topic_id = topics.id LEFT JOIN video_authors ON videos.id = video_authors.video_id LEFT JOIN authors ON video_authors.author_id = authors.id'
+const query = 'SELECT videos.*, author_id, firstname, lastname, topic_id, topics.name topic_name, religions.name religion_name FROM videos INNER JOIN religions ON videos.religion_id = religions.id LEFT JOIN video_topics ON videos.id = video_topics.video_id LEFT JOIN topics ON video_topics.topic_id = topics.id LEFT JOIN video_authors ON videos.id = video_authors.video_id LEFT JOIN authors ON video_authors.author_id = authors.id'
 
 export interface Env {
   DB: D1Database
@@ -50,7 +51,7 @@ const handleResults = async (results: any): Promise<Video[]> => {
   let topics: number[] = []
 
   for (const v of results) {
-    const {author_id, created, firstname, id, lastname, religion_branch_id, religion_id, topic_id, topic_name, video_id, video_length, video_start, video_title} = v
+    const {author_id, created, firstname, id, lastname, religion_branch_id, religion_id, religion_name, topic_id, topic_name, video_id, video_length, video_start, video_title} = v
 
     if (!videoIds.includes(id)) {
       videoIds.push(id)
@@ -66,6 +67,7 @@ const handleResults = async (results: any): Promise<Video[]> => {
         created,
         id,
         religion_id,
+        religion_name,
         religion_sub_id: religion_branch_id ? religion_branch_id : undefined,
         speakers: [],
         topics: [],
@@ -149,11 +151,11 @@ export default {
     const requests = url.pathname.split('/')
 
     let bind: string | number = '',
-      binds = [],
+      binds: any[] = [],
       count = 0,
       field = 'id',
       id: number | string = 0,
-      where = []
+      where: any[] = []
 
     if (!requests[1] || !['authors', 'religions', 'topics', 'videos'].includes(requests[1])) {
       return new Response(null, {status: 400})
@@ -179,8 +181,9 @@ export default {
           return new Response('Religion is required', {status: 400})
         }
 
-        where.push('videos.religion_id = ?')
-        binds.push(Number(url.searchParams.get('religion')))
+        const religion: string | number = url.searchParams.get('religion') ?? ''
+        where.push(Number.isNaN(religion) ? 'videos.religion_id = ?' : 'religions.slug = ?')
+        binds.push(religion)
 
         // Check if 'slug' parameter exists in the URL
         if (url.searchParams.get('slug')) {
@@ -223,7 +226,7 @@ export default {
 
         const sqlWhere = where.length ? `WHERE ${where.join(' AND ')} ` : ''
 
-        count = await queryCount(env, 'videos', sqlWhere, binds, 'LEFT JOIN video_authors ON video_authors.video_id = videos.id LEFT JOIN video_topics ON video_topics.video_id = videos.id')
+        count = await queryCount(env, 'videos', sqlWhere, binds, 'INNER JOIN religions ON religions.id = videos.religion_id LEFT JOIN video_authors ON video_authors.video_id = videos.id LEFT JOIN video_topics ON video_topics.video_id = videos.id')
         if (!count) {
           return new Response(null, {status: 204})
         }
