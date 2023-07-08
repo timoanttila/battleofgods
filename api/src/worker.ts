@@ -107,12 +107,12 @@ const handleResults = async (results: any): Promise<Video[]> => {
 }
 
 const fetchData = async (env: Env, table: string, order: string = 'name ASC') => {
-  const {results} = await env.DB.prepare(`SELECT * FROM ${table} ORDER BY ${order}`).all()
+  const {results} = await env.DB.prepare(`SELECT * FROM ${table} WHERE parent = '' ORDER BY ${order}`).all()
   return results
 }
 
 const queryCount = async (env: Env, table: string, where: string = '', binds: any[] | null = null, joins: string = ''): Promise<number> => {
-  let sql = `SELECT videos.id AS total FROM ${table}`
+  let sql = `SELECT videos.id FROM ${table}`
   if (joins) {
     sql += ` ${joins}`
   }
@@ -148,8 +148,10 @@ export default {
     const offset = (pageNumber - 1) * pageSize
     const requests = url.pathname.split('/')
 
-    let binds = [],
+    let bind: string | number = '',
+      binds = [],
       count = 0,
+      field = 'id',
       id: number | string = 0,
       where = []
 
@@ -172,6 +174,14 @@ export default {
           return Response.json(videos[0])
         }
 
+        // Check if 'religion' parameter is missing
+        if (!url.searchParams.get('religion')) {
+          return new Response('Religion is required', {status: 400})
+        }
+
+        where.push('videos.religion_id = ?')
+        binds.push(Number(url.searchParams.get('religion')))
+
         // Check if 'slug' parameter exists in the URL
         if (url.searchParams.get('slug')) {
           id = url.searchParams.get('slug') as string
@@ -184,32 +194,6 @@ export default {
 
           videos = await handleResults(results)
           return Response.json(videos[0]) // Return the first video as JSON
-        }
-
-        // Check if 'religion' and 'religionName' parameters are missing
-        if (!url.searchParams.get('religion') && !url.searchParams.get('religionName')) {
-          return new Response('Religion is required', {status: 400}) // Return 400 Bad Request with an error message
-        }
-
-        // Handle 'religion' parameter
-        if (url.searchParams.get('religion')) {
-          where.push('religions.id = ?')
-          binds.push(Number(url.searchParams.get('religion')))
-        }
-        // Handle 'religionName' parameter
-        else if (url.searchParams.get('religionName')) {
-          const religionName = url.searchParams
-            .get('religionName')
-            ?.replace(/[^a-z]/gi, '')
-            .toLocaleLowerCase()
-
-          // If 'religionName' is empty, return 400 Bad Request with an error message
-          if (!religionName) {
-            return new Response('Religion is required', {status: 400})
-          }
-
-          where.push('religions.slug = ?')
-          binds.push(religionName)
         }
 
         // Handle 'search' parameter
@@ -239,7 +223,7 @@ export default {
 
         const sqlWhere = where.length ? `WHERE ${where.join(' AND ')} ` : ''
 
-        count = await queryCount(env, 'videos', sqlWhere, binds, 'INNER JOIN religions ON videos.religion_id = religions.id LEFT JOIN video_authors ON video_authors.video_id = videos.id LEFT JOIN video_topics ON video_topics.video_id = videos.id')
+        count = await queryCount(env, 'videos', sqlWhere, binds, 'LEFT JOIN video_authors ON video_authors.video_id = videos.id LEFT JOIN video_topics ON video_topics.video_id = videos.id')
         if (!count) {
           return new Response(null, {status: 204})
         }
@@ -257,22 +241,68 @@ export default {
       case 'authors':
         const order = 'lastname, firstname ASC'
 
-        // Handle 'search' parameter
-        if (url.searchParams.get('search')) {
-          const keyword = url.searchParams
-            .get('search')
-            ?.replace(/[^a-z-]/gi, '')
-            .toLocaleLowerCase()
+        if (requests.length === 3) {
+          bind = Number(requests[2])
+          if (!bind || bind === 0) {
+            return new Response('Author ID is not valid.', {status: 400})
+          }
 
-          if (keyword) {
-            const bind = `%${keyword}%`
-            const {results} = await env.DB.prepare(`SELECT * FROM authors WHERE lastname LIKE ? OR firstname LIKE ? ORDER BY ${order}`).bind(bind, bind).all()
+          const {results} = await env.DB.prepare(`SELECT * FROM authors WHERE id = ? ORDER BY ${order}`).bind(bind).all()
+          if (Array.isArray(results) && results.length) {
+            return Response.json(results[0])
+          }
+
+          return new Response('Author not found.', {status: 404})
+        } else if (url.searchParams.get('search')) {
+          bind =
+            url.searchParams
+              .get('search')
+              ?.replace(/[^a-z-]/gi, '')
+              .toLocaleLowerCase() ?? ''
+
+          if (!bind) {
+            return new Response('Search keyword is not valid.', {status: 400})
+          }
+
+          bind = `%${bind}%`
+          const {results} = await env.DB.prepare(`SELECT * FROM authors WHERE lastname LIKE ? OR firstname LIKE ? ORDER BY ${order}`).bind(bind, bind).all()
+          if (Array.isArray(results) && results.length) {
             return Response.json(results)
           }
+
+          return new Response(null, {status: 204})
         }
 
         return Response.json(await fetchData(env, 'authors', order))
       case 'religions':
+        if (requests.length === 3) {
+          bind = Number(requests[2])
+          if (!bind || bind === 0) {
+            return new Response('Religion ID is not valid.', {status: 400})
+          }
+        } else if (url.searchParams.get('slug')) {
+          bind =
+            url.searchParams
+              .get('slug')
+              ?.replace(/[^a-z]/gi, '')
+              .toLocaleLowerCase() || ''
+
+          if (!bind) {
+            return new Response('Religion slug is not valid.', {status: 400})
+          }
+
+          field = 'slug'
+        }
+
+        if (bind) {
+          const {results} = await env.DB.prepare(`SELECT * FROM religions WHERE ${field} = ? AND parent = ''`).bind(bind).all()
+          if (Array.isArray(results) && results.length) {
+            return Response.json(results[0])
+          }
+
+          return new Response('Religion not found.', {status: 404})
+        }
+
         return Response.json(await fetchData(env, 'religions'))
       case 'topics':
         return Response.json(await fetchData(env, 'topics'))
