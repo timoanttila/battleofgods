@@ -172,39 +172,66 @@ export default {
           return Response.json(videos[0])
         }
 
+        // Check if 'slug' parameter exists in the URL
         if (url.searchParams.get('slug')) {
           id = url.searchParams.get('slug') as string
           const {results} = await env.DB.prepare(`${query} WHERE videos.video_id = ?`).bind(id).all()
+
+          // If no results found, return 204 No Content response
           if (!results?.length) {
             return new Response(null, {status: 204})
           }
 
           videos = await handleResults(results)
-          return Response.json(videos[0])
+          return Response.json(videos[0]) // Return the first video as JSON
         }
 
+        // Check if 'religion' and 'religionName' parameters are missing
         if (!url.searchParams.get('religion') && !url.searchParams.get('religionName')) {
-          return new Response('Religion is required', {status: 400})
+          return new Response('Religion is required', {status: 400}) // Return 400 Bad Request with an error message
         }
 
+        // Handle 'religion' parameter
         if (url.searchParams.get('religion')) {
           where.push('religions.id = ?')
           binds.push(Number(url.searchParams.get('religion')))
-        } else if (url.searchParams.get('religionName')) {
+        }
+        // Handle 'religionName' parameter
+        else if (url.searchParams.get('religionName')) {
+          const religionName = url.searchParams
+            .get('religionName')
+            ?.replace(/[^a-z]/gi, '')
+            .toLocaleLowerCase()
+
+          // If 'religionName' is empty, return 400 Bad Request with an error message
+          if (!religionName) {
+            return new Response('Religion is required', {status: 400})
+          }
+
           where.push('religions.slug = ?')
-          binds.push(url.searchParams.get('religionName'))
+          binds.push(religionName)
         }
 
+        // Handle 'search' parameter
         if (url.searchParams.get('search')) {
-          where.push('video_title LIKE ?')
-          binds.push(`%${url.searchParams.get('search')}%`)
+          const keyword = url.searchParams
+            .get('search')
+            ?.replace(/[^a-z]/gi, '')
+            .toLocaleLowerCase()
+
+          if (keyword) {
+            where.push('video_title LIKE ?')
+            binds.push(`%${keyword}%`)
+          }
         }
 
+        // Handle 'speaker' parameter
         if (url.searchParams.get('speaker')) {
           where.push('video_authors.author_id = ?')
           binds.push(Number(url.searchParams.get('speaker')))
         }
 
+        // Handle 'topic' parameter
         if (url.searchParams.get('topic')) {
           where.push('video_topics.topic_id = ?')
           binds.push(Number(url.searchParams.get('topic')))
@@ -230,10 +257,18 @@ export default {
       case 'authors':
         const order = 'lastname, firstname ASC'
 
+        // Handle 'search' parameter
         if (url.searchParams.get('search')) {
-          const bind = `%${url.searchParams.get('search')}%`
-          const {results} = await env.DB.prepare(`SELECT * FROM authors WHERE lastname LIKE ? OR firstname LIKE ? ORDER BY ${order}`).bind(bind, bind).all()
-          return Response.json(results)
+          const keyword = url.searchParams
+            .get('search')
+            ?.replace(/[^a-z-]/gi, '')
+            .toLocaleLowerCase()
+
+          if (keyword) {
+            const bind = `%${keyword}%`
+            const {results} = await env.DB.prepare(`SELECT * FROM authors WHERE lastname LIKE ? OR firstname LIKE ? ORDER BY ${order}`).bind(bind, bind).all()
+            return Response.json(results)
+          }
         }
 
         return Response.json(await fetchData(env, 'authors', order))
