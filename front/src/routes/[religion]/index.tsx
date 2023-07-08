@@ -41,16 +41,13 @@ interface FetchData {
 
 export const videos = routeLoader$(async requestEvent => {
   // This code runs only on the server, after every navigation
-  const params = ['page', 'limit', 'topic']
-  let query = ''
+  let query = `?religionName=${requestEvent.params['religion']}`
 
-  for (const param in params) {
-    if (requestEvent.params[param]) {
-      query += `&${param}=${requestEvent.params[param]}`
-    }
+  for await (const param of requestEvent.query) {
+    query += `&${param[0]}=${param[1]}`
   }
 
-  const res = await fetch(`https://api.battleofgods.net/videos?religion=1${query}`)
+  const res = await fetch(`https://api.battleofgods.net/videos${query}`)
   const videos = await res.json()
   return videos as FetchData
 })
