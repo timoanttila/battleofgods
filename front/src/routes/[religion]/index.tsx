@@ -1,5 +1,6 @@
 import {component$, Resource, useResource$, useSignal, $} from '@builder.io/qwik'
 import {routeLoader$, useLocation, DocumentHead} from '@builder.io/qwik-city'
+import Hero from '../../components/hero'
 
 interface Speaker {
   id: number
@@ -50,7 +51,6 @@ interface PageData {
 const host = 'https://api.battleofgods.net/'
 
 export const getPage = routeLoader$(async (requestEvent): Promise<PageData> => {
-  console.log('getPage ladattu')
   const res = await fetch(`${host}religions?slug=${requestEvent.params['religion'].replace(/([^a-z])/gi, '').toLowerCase()}`)
   return await res.json()
 })
@@ -118,38 +118,55 @@ export default component$(() => {
         onPending={() => <div>Loading...</div>}
         onRejected={reason => <div>Error: {reason}</div>}
         onResolved={data => (
-          <div class="text-center">
-            <h1>What is {data.name}?</h1>
-            {data.description}
-          </div>
+          <>
+            <Hero title={`What is ${data.name}?`} image={religion} alt={data.name} />
+            <div id="description" dangerouslySetInnerHTML={data.description} />
+            <h2 class="text-center video-title">Videos about {data.name} and related topics</h2>
+          </>
         )}
       />
 
       <Resource
         value={videos}
         onPending={() => <div>Loading...</div>}
-        onRejected={reason => <div>Error: {reason}</div>}
+        onRejected={reason => <div>Error: {String(reason)}</div>}
         onResolved={content => (
           <>
-            {content.meta && (
+            {content.meta && content.meta.pages > 1 && (
               <div id="pageButtons" class="text-center">
-                <button onClick$={() => pageChange(content.meta.page > 1 ? pageNumber.value - 1 : 1)}>Ed</button>
-                <div>
-                  {content.meta.page} / {content.meta.pages} - {content.meta.count}
+                <button onClick$={() => pageChange(content.meta.page > 1 ? pageNumber.value - 1 : 1)} class="inline-block p-0" title="Previous page" disabled={content.meta.page <= 1}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <title>Left arrow</title>
+                    <path d="M16.67 0l2.83 2.829-9.339 9.175 9.339 9.167-2.83 2.829-12.17-11.996z" />
+                  </svg>
+                </button>
+
+                <div class="inline-block">
+                  Page: {content.meta.page} / {content.meta.pages} - {content.meta.count} videos
                 </div>
-                <button onClick$={() => pageChange(content.meta.pages > content.meta.page ? pageNumber.value + 1 : content.meta.pages)}>Se</button>
+
+                <button onClick$={() => pageChange(content.meta.pages > content.meta.page ? pageNumber.value + 1 : content.meta.pages)} class="inline-block p-0" title="Next page" disabled={content.meta.pages <= content.meta.page}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <title>Right arrow</title>
+                    <path d="M7.33 24l-2.83-2.829 9.339-9.175-9.339-9.167 2.83-2.829 12.17 11.996z" />
+                  </svg>
+                </button>
               </div>
             )}
 
             {Array.isArray(content.data) && content.data[0] && (
-              <div id="videos" class="text-center">
+              <div id="videos" class="gap grid grid-4 text-center">
                 {content.data.map(video => (
-                  <a key={video.id} href={video.video_url} aria-labelledby={`video-title-${video.id}`}>
-                    <img src={video.video_image} alt={video.video_title} loading="lazy" aria-hidden="true" />
-                    <div id={`video-title-${video.id}`} class="video_name">
+                  <a key={video.id} class="block" href={video.video_url} aria-labelledby={`video-title-${video.id}`}>
+                    <div class="video-image">
+                      <img id={`video-image-${video.id}`} class="block h-full object-fit rounded w-full" src={video.video_image} alt={video.video_title} width="320" height="180" loading="lazy" aria-hidden="true" />
+                    </div>
+
+                    <div id={`video-title-${video.id}`} class="video-name">
                       {video.video_title}
                     </div>
-                    <div class="video_info">
+
+                    <div class="video-info">
                       <span id={`video-created-${video.id}`}>{video.created}</span>
                     </div>
                   </a>

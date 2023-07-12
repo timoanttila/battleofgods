@@ -26,14 +26,23 @@ export const useServerTimeLoader = routeLoader$(() => {
 export default component$(() => {
   useStyles$(styles)
   return (
-    <>
+    <div id="wrap" class="flex">
       <Header />
-      <main>
+      <main class="container mx-auto">
         <Slot />
       </main>
-      <div>
-        Created by <a href="https://timoanttila.com/">Timo Anttila</a>, <a href="https://tuspe.com/">Tuspe Design Oy</a>
-      </div>
-    </>
+      <footer class="bg-primary block">
+        <div class="container mx-auto no-underline text-center text-white">
+          Created by{' '}
+          <a class="text-white" href="https://timoanttila.com/">
+            Timo Anttila
+          </a>
+          ,
+          <a class="text-white" href="https://tuspe.com/">
+            Tuspe Design Oy
+          </a>
+        </div>
+      </footer>
+    </div>
   )
 })
