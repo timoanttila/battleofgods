@@ -14,11 +14,12 @@ interface Video {
   religion_id: number
   religion_name: string
   religion_sub_id?: number
-  speakers: Speaker[]
-  topics: Topic[]
+  speakers?: Speaker[]
+  topics?: FilterData[]
   video_id: string
   video_image: string
   video_length: string
+  video_start?: string
   video_title: string
   video_url: string
 }
@@ -29,80 +30,38 @@ interface Speaker {
   lastname: string
 }
 
-interface Topic {
+interface FilterData {
   id: number
   name: string
+  slug?: string
 }
 
+const query = 'SELECT videos.*, religions.name religion_name FROM videos INNER JOIN religions ON videos.religion_id = religions.id'
+/*
 const query = 'SELECT videos.*, author_id, firstname, lastname, topic_id, topics.name topic_name, religions.name religion_name FROM videos INNER JOIN religions ON videos.religion_id = religions.id LEFT JOIN video_topics ON videos.id = video_topics.video_id LEFT JOIN topics ON video_topics.topic_id = topics.id LEFT JOIN video_authors ON videos.id = video_authors.video_id LEFT JOIN authors ON video_authors.author_id = authors.id'
-
+*/
 export interface Env {
   DB: D1Database
 }
 
-const handleResults = async (results: any): Promise<Video[]> => {
-  if (!Array.isArray(results) || results.length === 0) {
-    return []
+const handleVideoData = async (video: Video): Promise<Video> => {
+  const videoSlug = video.video_id
+  let video_url = `https://www.youtube.com/watch?v=${videoSlug}`
+  if (video.video_start) {
+    video_url += `?start=${video.video_start}`
   }
 
+  video.video_image = `https://img.youtube.com/vi_webp/${videoSlug}/mqdefault.webp`
+  video.video_url = video_url
+
+  return video
+}
+
+const handleVideos = async (results: any): Promise<Video[]> => {
   const videos: Video[] = []
-  const videoIds: number[] = []
-  let authors: number[] = []
-  let topics: number[] = []
 
   for (const v of results) {
-    const {author_id, created, firstname, id, lastname, religion_branch_id, religion_id, religion_name, topic_id, topic_name, video_id, video_length, video_start, video_title} = v
-
-    if (!videoIds.includes(id)) {
-      videoIds.push(id)
-      authors = []
-      topics = []
-
-      let video_url = `https://www.youtube.com/watch?v=${video_id}`
-      if (video_start) {
-        video_url += `?start=${video_start}`
-      }
-
-      let video: Video = {
-        created,
-        id,
-        religion_id,
-        religion_name,
-        religion_sub_id: religion_branch_id ? religion_branch_id : undefined,
-        speakers: [],
-        topics: [],
-        video_id,
-        video_image: `https://img.youtube.com/vi_webp/${video_id}/mqdefault.webp`,
-        video_length,
-        video_title,
-        video_url
-      }
-
-      videos.push(video)
-    }
-
-    const key = videos.findIndex(video => video.id === id)
-
-    if (author_id && !authors.includes(author_id)) {
-      authors.push(author_id)
-      const speaker: Speaker = {
-        id: author_id,
-        firstname,
-        lastname
-      }
-
-      videos[key].speakers.push(speaker)
-    }
-
-    if (topic_id && !topics.includes(topic_id)) {
-      topics.push(topic_id)
-      const topic: Topic = {
-        id: topic_id,
-        name: topic_name
-      }
-
-      videos[key].topics.push(topic)
-    }
+    videos.push(await handleVideoData(v))
   }
 
   return videos
@@ -111,6 +70,20 @@ const handleResults = async (results: any): Promise<Video[]> => {
 const fetchData = async (env: Env, table: string, order: string = 'name ASC') => {
   const {results} = await env.DB.prepare(`SELECT * FROM ${table} WHERE parent = '' ORDER BY ${order}`).all()
   return results
+}
+
+const fetchVideoExtras = async (env: Env, videoId: number) => {
+  const tables = ['author', 'topic']
+  const extras: {[key: string]: any} = {}
+
+  for (const table of tables) {
+    const data = await env.DB.prepare(`SELECT * FROM ${table}s t1 INNER JOIN video_${table}s t2 ON t2.${table}_id = t1.id WHERE t2.video_id = ?`).bind(videoId).all()
+    if (Array.isArray(data.results) && data.results[0]) {
+      extras[table] = data.results
+    }
+  }
+
+  return extras
 }
 
 const queryCount = async (env: Env, table: string, where: string = '', binds: any[] | null = null, joins: string = ''): Promise<number> => {
@@ -167,13 +140,15 @@ export default {
 
         if (requests.length === 3) {
           id = Number(requests[2])
-          const {results} = await env.DB.prepare(`${query} WHERE video_topics.video_id = ? OR video_authors.video_id = ?`).bind(id, id).all()
+          const {results} = await env.DB.prepare(`${query} WHERE videos.id = ? LIMIT 1`).bind(id).all()
           if (!results?.length) {
             return new Response(null, {status: 204})
           }
 
-          videos = await handleResults(results)
-          return Response.json(videos[0])
+          const video = results[0] as Video
+          const extras = await fetchVideoExtras(env, video.id)
+
+          return Response.json(await handleVideoData({...video, ...extras}))
         }
 
         // Check if 'religion' parameter is missing
@@ -195,8 +170,8 @@ export default {
             return new Response(null, {status: 204})
           }
 
-          videos = await handleResults(results)
-          return Response.json(videos[0]) // Return the first video as JSON
+          videos = await handleVideos(results)
+          return Response.json(videos[0])
         }
 
         // Handle 'search' parameter
@@ -213,13 +188,13 @@ export default {
         }
 
         // Handle 'speaker' parameter
-        if (url.searchParams.get('speaker')) {
+        if (url.searchParams.get('speaker') && Number(url.searchParams.get('speaker')) > 0) {
           where.push('video_authors.author_id = ?')
           binds.push(Number(url.searchParams.get('speaker')))
         }
 
         // Handle 'topic' parameter
-        if (url.searchParams.get('topic')) {
+        if (url.searchParams.get('topic') && Number(url.searchParams.get('topic')) > 0) {
           where.push('video_topics.topic_id = ?')
           binds.push(Number(url.searchParams.get('topic')))
         }
@@ -234,7 +209,7 @@ export default {
         const {results} = await env.DB.prepare(`${query} ${sqlWhere} ORDER BY videos.created DESC LIMIT ${pageSize} OFFSET ${offset}`)
           .bind(...binds)
           .all()
-        videos = await handleResults(results)
+        videos = await handleVideos(results)
 
         return Response.json({
           data: videos,
