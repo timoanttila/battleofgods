@@ -144,8 +144,17 @@ export default {
       return new Response('This is not what you looking for..', {status: 400})
     }
 
+    // Handle OPTIONS requests
     if (request.method === 'OPTIONS') {
-      return new Response(null, {status: 200})
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+          'Access-Control-Allow-Headers': 'Authorization, Cache-Control, Content-Type, If-Modified-Since, Keep-Alive, Upgrade-Insecure-Requests, User-Agent, X-Requested-With',
+          'Access-Control-Allow-Credentials': 'true'
+        }
+      })
     }
 
     switch (requests[1]) {
