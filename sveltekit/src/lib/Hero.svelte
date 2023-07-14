@@ -1,10 +1,24 @@
 <script lang="ts">
-  export let alt: string
+	import { page } from '$app/stores';
+	import {host, religion, siteName} from '$lib/store'
+
+	export let alt: string
   export let image: string
   export let title: string
+	export let description: string = ''
 
 	$: imageUrl = `/images/${image}`
+	$: metaTitle = $siteName === title ? title : `${title} | ${$siteName}`
 </script>
+
+<svelte:head>
+	<title>{metaTitle}</title>
+	<meta name="twitter:title" property="og:title" content={title} />
+	<meta name="description" content={description ?? $religion?.summary} />
+	<meta name="twitter:description" property="og:description" content={description ?? $religion?.summary} />
+	<meta name="canonical" property="og:url" content={`${$host}${$page.url.pathname}`} />
+	<meta name="twitter:image" property="og:image" content={`${$host}${imageUrl}-1350.webp`} />
+</svelte:head>
 
 <div id="hero" class="relative text-center">
 	<img

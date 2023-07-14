@@ -5,13 +5,14 @@
 
 <Hero
 	alt="A monk sits atop a large rock, looking out at the majestic castle in the distance. The sky is filled with white clouds and a flock of birds flying by."
+	description="Discovering the true path amidst diverse religions can be challenging. Join us in exploring faiths, teachings, and historical truths to navigate this spiritual quest with enlightenment."
 	image="battle-of-gods"
 	title="Battle of Gods"
 />
 
-<div id="about" class="mb-3 mt-3 mx-auto text-center">There are many religions in the world, so how can we know which religion is the right one and which one is meant for you? Battle of Gods provides an opportunity to explore the world's largest religions and watch videos from priests and ordinary people. Join us to discover the wonders, historical truths, and theology of religions.</div>
+<div id="about" class="mb-3 mt-3 mx-auto px text-center">There are many religions in the world, but what is the truth? Who holds the answers? What does history reveal? Welcome to the theological teachings of the world's largest religions, incredible discoveries and great insights. Let us help you discover the path to enlightenment!</div>
 
-<div id="religions" class="gap grid no-underline">
+<div id="religions" class="gap grid no-underline px">
 {#each $religions as religion}
 	<div id={`religion-${religion.slug}`} class="grid grid-2 religion-content rounded">
 		<div class="religion-image">
