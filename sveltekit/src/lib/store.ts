@@ -39,7 +39,6 @@ export const fetchData = async (query: string, method: string = 'GET', data: obj
   const headers = {
     'Content-Type': 'application/json',
     'Tuspe-Api': 'f5913925-a526-49f5-bcd9-351117375db3',
-    cache: 'force-cache',
     'cache-control': 'max-age=21600'
   }
 
