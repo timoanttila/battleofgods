@@ -1,8 +1,16 @@
-export interface Religion {
-  description: string
+export interface Basic {
   id: number
-  limit: number
   name: string
+}
+
+export interface Filter extends Basic {
+  total: number
+}
+
+export interface Religion extends Basic {
+  content: string
+  description: string
+  limit: number
   page: number
   parent: number
   slug: string
@@ -15,11 +23,6 @@ export interface Speaker {
   lastname: string
 }
 
-export interface Topic {
-  id: number
-  name: string
-}
-
 export interface Video {
   created: string
   id: number
@@ -27,7 +30,7 @@ export interface Video {
   religion_name: string
   slug: string
   speakers: Speaker[]
-  topics: Topic[]
+  topics: Basic[]
   video_id: string
   video_image: string
   video_length: number

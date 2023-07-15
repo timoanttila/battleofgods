@@ -1,18 +1,29 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import dayjs from 'dayjs';
-	import {fetchData, religion, width} from '$lib/store'
+	import {fetchData, religion, topic, width} from '$lib/store'
   import type {Video, VideoData, VideoMeta} from '$lib/types'
 	import Hero from '$lib/Hero.svelte'
+  import Topics from '$lib/Topics.svelte'
 
-  let videos: Video[] = []
-  let meta: VideoMeta = {count:0, limit: $width > 750 ? 20 : 10, page:1, pages:0}
-  let busy = false
-  let total = 0
+  let videos: Video[] = [],
+  meta: VideoMeta = {count:0, limit: $width > 750 ? 20 : 10, page:1, pages:0},
+  busy = false,
+  total = 0
 
-  const getVideos = async () => {
+  const getVideos = async (reset: boolean = false) => {
     busy = true
-    const data: VideoData = await fetchData(`videos?religion=${$religion?.id}&page=${meta.page}&limit=${meta.limit}`)
+
+    if (reset) {
+      videos = []
+    }
+
+    let query = `videos?religion=${$religion?.id}&page=${meta.page}&limit=${meta.limit}`
+    if ($topic > 0) {
+      query += `&topic=${$topic}`
+    }
+
+    const data: VideoData = await fetchData(query)
     if (!data?.meta || data.meta?.count === 0) {
       busy = false
       return
@@ -36,6 +47,10 @@
   onMount(async () => {
 		getVideos()
 	});
+
+  $: if ($topic) {
+    getVideos(true)
+  }
 </script>
 
 {#if $religion?.id}
@@ -49,10 +64,12 @@
     <p>Please note that the videos presented here reflect the opinions of their respective creators regarding religions and their teachings. The creators are solely responsible for the content of the videos, and they retain the copyrights to their work. We apologize if the content of the videos causes any distress or discomfort.</p>
   </div>
 
-  {#if Array.isArray(videos) && videos[0]}
-    <div id="videos-count" class="mb-2 mt-2 px text-center"><strong aria-live="polite">Results: {total} / {meta.count} videos</strong></div>
+  <Topics type="videos"/>
 
-    <ul id="videos" class="gap grid grid-4 m-0 px" role="feed" aria-busy={busy}>
+  <div id="videos-count" class="mb-2 mt-1 px text-center"><strong aria-live="polite">Results: {total} / {meta.count} videos</strong></div>
+
+  <div id="videos" class="gap grid grid-4 m-0 px" role="feed" aria-busy={busy}>
+    {#if Array.isArray(videos) && videos[0]}
       {#each videos as video, index}
         <div aria-posinset={index + 1} aria-setsize={total} aria-labelledby={`title-${video.id}`}>
           <a href={video.video_url}>
@@ -68,12 +85,12 @@
           </a>
         </div>
       {/each}
-    </ul>
-
-    {#if meta.next}
-      <div id="action-buttons" class="mt-3 text-center">
-        <button on:click={() => changePage(Number(meta.next))} class="bg-primary btn rounded text-white uppercase" disabled={!meta.next}>Load next {meta.limit} videos</button>
-      </div>
     {/if}
+  </div>
+
+  {#if Array.isArray(videos) && videos[0] && meta.next}
+    <div id="action-buttons" class="mt-3 text-center">
+      <button on:click={() => changePage(Number(meta.next))} class="bg-primary btn rounded text-white uppercase" disabled={!meta.next}>Load next {meta.limit} videos</button>
+    </div>
   {/if}
 {/if}

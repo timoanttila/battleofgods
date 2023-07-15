@@ -37,9 +37,7 @@ interface FilterData {
 }
 
 const query = 'SELECT videos.*, religions.name religion_name FROM videos INNER JOIN religions ON videos.religion_id = religions.id'
-/*
-const query = 'SELECT videos.*, author_id, firstname, lastname, topic_id, topics.name topic_name, religions.name religion_name FROM videos INNER JOIN religions ON videos.religion_id = religions.id LEFT JOIN video_topics ON videos.id = video_topics.video_id LEFT JOIN topics ON video_topics.topic_id = topics.id LEFT JOIN video_authors ON videos.id = video_authors.video_id LEFT JOIN authors ON video_authors.author_id = authors.id'
-*/
+
 export interface Env {
   DB: D1Database
 }
@@ -67,8 +65,8 @@ const handleVideos = async (results: any): Promise<Video[]> => {
   return videos
 }
 
-const getData = async (env: Env, select: string, binds: string[] | null = null) => {
-  const statement = await env.DB.prepare(select)
+const getData = async (env: Env, select: string, binds: any[] | null = null) => {
+  const statement = env.DB.prepare(select)
   const {results} = binds ? await statement.bind(...binds).all() : await statement.all()
 
   if (Array.isArray(results)) {
@@ -96,11 +94,10 @@ const queryCount = async (env: Env, table: string, where: string = '', binds: an
   if (where && binds) {
     sql += ` ${where}`
   }
-  sql += ' GROUP BY videos.id'
 
   const statement = env.DB.prepare(sql)
   const {results} = where && binds ? await statement.bind(...binds).all() : await statement.all()
-  return results?.length ?? 0
+  return (results[0] as any).total
 }
 
 const metaNumbers = async (count: number, page: number, limit: number) => {
@@ -135,26 +132,30 @@ export default {
       binds: any[] = [],
       count = 0,
       field = 'id',
-      id: number | string = 0,
       results: any = null,
-      religion: number | null = null,
       where: any[] = []
 
     if (!requests[1] || !['authors', 'pages', 'religions', 'topics', 'videos'].includes(requests[1])) {
       return new Response('This is not what you looking for..', {status: 400})
     }
 
+    const cors = new Headers()
+    cors.set('Content-Type', 'application/json;charset=UTF-8')
+    cors.set('Access-Control-Allow-Origin', '*')
+    cors.set('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
+    cors.set('Access-Control-Allow-Headers', 'Authorization, Cache-Control, Content-Type, Keep-Alive, Origin, Tuspe-Api, Upgrade-Insecure-Requests, User-Agent, X-Requested-With')
+    cors.set('Access-Control-Allow-Credentials', 'true')
+    cors.set('Access-Control-Max-Age', '21600')
+
+    const headers = {
+      status: 200,
+      headers: cors
+    }
+
     // Handle OPTIONS requests
     if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
-          'Access-Control-Allow-Headers': 'Authorization, Cache-Control, Content-Type, If-Modified-Since, Keep-Alive, Upgrade-Insecure-Requests, User-Agent, X-Requested-With',
-          'Access-Control-Allow-Credentials': 'true'
-        }
-      })
+      headers.status = 204
+      return new Response(null, headers)
     }
 
     switch (requests[1]) {
@@ -164,7 +165,7 @@ export default {
         }
 
         bind = Number(url.searchParams.get('religion'))
-        if (!bind || bind < 1) {
+        if (bind < 1) {
           return new Response('Religion ID is not valid.', {status: 400})
         }
 
@@ -172,24 +173,30 @@ export default {
         binds.push(bind)
 
         if (url.searchParams.get('slug')) {
-          bind = checkSlug(url.searchParams.get('slug'))
+          bind = String(url.searchParams.get('slug'))
           sql += ' AND slug = ?'
-          binds.push(bind)
+          binds.push(checkSlug(bind))
           results = await getData(env, sql, binds)
 
           if (!results?.length) {
             return new Response('Page not found.', {status: 404})
           }
 
-          return Response.json(results[0])
+          return new Response(JSON.stringify(results[0]), headers)
         }
 
-        Response.json(await getData(env, `${sql} ORDER BY title ASC`))
+        results = await getData(env, `${sql} ORDER BY title ASC`, binds)
+        if (!results?.length) {
+          return new Response(null, {status: 204})
+        }
+
+        return new Response(JSON.stringify(results), headers)
       case 'videos':
         let videos: Video[] = []
 
         if (requests.length === 3) {
           bind = Number(requests[2])
+
           results = await getData(env, `${query} WHERE videos.id = ? LIMIT 1`, [bind])
           if (!results?.length) {
             return new Response('Video not found.', {status: 404})
@@ -198,7 +205,7 @@ export default {
           const video = results[0] as Video
           const extras = await fetchVideoExtras(env, video.id)
 
-          return Response.json(await handleVideoData({...video, ...extras}))
+          return new Response(JSON.stringify(await handleVideoData({...video, ...extras})), headers)
         }
 
         // Check if 'religion' parameter is missing
@@ -211,54 +218,57 @@ export default {
           return new Response('Religion ID is not valid.', {status: 400})
         }
 
-        where.push('videos.religion_id = ? OR videos.religion_branch_id = ?')
+        where.push('(videos.religion_id = ? OR videos.religion_branch_id = ?)')
         binds.push(bind, bind)
 
         if (url.searchParams.get('slug')) {
-          bind = checkSlug(url.searchParams.get('slug'))
-          results = await getData(env, `${query} WHERE videos.video_id = ? LIMIT 1`, [bind])
+          bind = String(url.searchParams.get('slug'))
+          results = await getData(env, `${query} WHERE videos.video_id = ? LIMIT 1`, [checkSlug(bind)])
           if (!results?.length) {
             return new Response('Video not found.', {status: 404})
           }
 
           videos = await handleVideos(results)
-          return Response.json(videos[0])
+          return new Response(JSON.stringify(videos[0]), headers)
         }
 
         if (url.searchParams.get('search')) {
-          bind = checkContent(url.searchParams.get('search'))
-          if (bind) {
-            where.push('video_title LIKE ?')
-            binds.push(`%${id}%`)
-          }
+          bind = String(url.searchParams.get('search'))
+          where.push('video_title LIKE ?')
+          binds.push(`%${checkContent(bind)}%`)
         }
 
-        // Handle 'speaker' parameter
+        let joins = ''
+
         if (url.searchParams.get('speaker') && Number(url.searchParams.get('speaker')) > 0) {
+          joins = ' INNER JOIN video_authors ON videos.id = video_authors.video_id'
           where.push('video_authors.author_id = ?')
           binds.push(Number(url.searchParams.get('speaker')))
         }
 
-        // Handle 'topic' parameter
         if (url.searchParams.get('topic') && Number(url.searchParams.get('topic')) > 0) {
+          joins += ' INNER JOIN video_topics ON videos.id = video_topics.video_id'
           where.push('video_topics.topic_id = ?')
           binds.push(Number(url.searchParams.get('topic')))
         }
 
         const sqlWhere = where.length ? `WHERE ${where.join(' AND ')} ` : ''
 
-        count = await queryCount(env, 'videos', sqlWhere, binds)
+        count = await queryCount(env, `videos${joins}`, sqlWhere, binds)
         if (!count) {
           return new Response(null, {status: 204})
         }
 
-        results = await getData(env, `${query} ${sqlWhere} ORDER BY videos.created DESC LIMIT ${pageSize} OFFSET ${offset}`, binds)
+        results = await getData(env, `${query}${joins} ${sqlWhere} ORDER BY videos.created DESC LIMIT ${pageSize} OFFSET ${offset}`, binds)
         videos = await handleVideos(results)
 
-        return Response.json({
-          data: videos,
-          meta: await metaNumbers(count, pageNumber, pageSize)
-        })
+        return new Response(
+          JSON.stringify({
+            data: videos,
+            meta: await metaNumbers(count, pageNumber, pageSize)
+          }),
+          headers
+        )
 
       case 'authors':
         const order = 'lastname, firstname ASC'
@@ -271,28 +281,23 @@ export default {
 
           results = await getData(env, `SELECT * FROM authors WHERE id = ? LIMIT 1`, [bind])
           if (Array.isArray(results) && results.length) {
-            return Response.json(results[0])
+            return new Response(JSON.stringify(results[0]), headers)
           }
 
           return new Response('Author not found.', {status: 404})
         } else if (url.searchParams.get('search')) {
-          bind = checkContent(url.searchParams.get('search'))
-
-          if (!bind) {
-            return new Response('Search keyword is not valid.', {status: 400})
-          }
-
-          bind = `%${bind}%`
+          bind = String(url.searchParams.get('search'))
+          bind = `%${checkContent(bind)}%`
           results = await getData(env, `SELECT * FROM authors WHERE lastname LIKE ? OR firstname LIKE ? ORDER BY ${order}`, [bind, bind])
 
           if (Array.isArray(results) && results.length) {
-            return Response.json(results)
+            return new Response(JSON.stringify(results), headers)
           }
 
           return new Response(null, {status: 204})
         }
 
-        return Response.json(await getData(env, `SELECT * FROM authors ORDER BY ${order}`))
+        return new Response(JSON.stringify(await getData(env, `SELECT * FROM authors ORDER BY ${order}`)), headers)
       case 'religions':
         if (requests.length === 3) {
           bind = Number(requests[2])
@@ -300,27 +305,52 @@ export default {
             return new Response('Religion ID is not valid.', {status: 400})
           }
         } else if (url.searchParams.get('slug')) {
-          bind = checkSlug(url.searchParams.get('slug'))
-
-          if (!bind) {
-            return new Response('Religion slug is not valid.', {status: 400})
-          }
-
+          bind = String(url.searchParams.get('slug'))
+          bind = checkSlug(bind)
           field = 'slug'
         }
 
         if (bind) {
-          results = await getData(env, `SELECT * FROM religions WHERE ${field} = ? AND parent = '' LIMIT 1`, [bind])
+          results = await getData(env, `SELECT * FROM religions WHERE ${field} = ? AND parent = '' LIMIT 1`, [String(bind)])
           if (Array.isArray(results) && results.length) {
-            return Response.json(results[0])
+            return new Response(JSON.stringify(results[0]), headers)
           }
 
           return new Response('Religion not found.', {status: 404})
         }
 
-        return Response.json(await getData(env, `SELECT * FROM religions WHERE parent = '' ORDER BY id ASC`))
+        return new Response(JSON.stringify(await getData(env, `SELECT * FROM religions WHERE parent = '' ORDER BY id ASC`)), headers)
       case 'topics':
-        return Response.json(await getData(env, 'SELECT * FROM topics ORDER BY name ASC'))
+        if (url.searchParams.get('type')) {
+          if (!url.searchParams.get('religion')) {
+            return new Response('Religion not found.', {status: 404})
+          }
+
+          bind = Number(url.searchParams.get('religion'))
+          if (bind < 1) {
+            return new Response('Religion ID is not valid.', {status: 400})
+          }
+
+          let join = ''
+          const type = checkSlug(String(url.searchParams.get('type')))
+          if (type === 'videos') {
+            join = 'INNER JOIN video_topics ON topics.id = video_topics.topic_id INNER JOIN videos ON videos.id = video_topics.video_id'
+          } else if (type === 'pages') {
+            join = 'INNER JOIN pages ON topics.id = pages.topic_id'
+          } else {
+            return new Response(`Type is not valid: ${type}`, {status: 400})
+          }
+
+          results = await getData(env, `SELECT topics.id, topics.name, COUNT(${type}.id) total FROM topics ${join} WHERE ${type}.religion_id = ? GROUP BY topics.id ORDER BY topics.name ASC`, [bind])
+
+          if (!results?.length) {
+            return new Response(null, {status: 204})
+          }
+
+          return new Response(JSON.stringify(results), headers)
+        }
+
+        return new Response(JSON.stringify(await getData(env, 'SELECT * FROM topics ORDER BY name ASC')), headers)
     }
   }
 }

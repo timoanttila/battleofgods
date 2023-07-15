@@ -5,7 +5,7 @@
 	export let alt: string
   export let image: string
   export let title: string
-	export let description: string = ''
+	export let description: string|null = null
 
 	$: imageUrl = `/images/${image}`
 	$: metaTitle = $siteName === title ? title : `${title} | ${$siteName}`
@@ -14,8 +14,8 @@
 <svelte:head>
 	<title>{metaTitle}</title>
 	<meta name="twitter:title" property="og:title" content={title} />
-	<meta name="description" content={description ?? $religion?.summary} />
-	<meta name="twitter:description" property="og:description" content={description ?? $religion?.summary} />
+	<meta name="description" content={description ?? $religion?.description} />
+	<meta name="twitter:description" property="og:description" content={description ?? $religion?.description} />
 	<meta name="canonical" property="og:url" content={`${$host}${$page.url.pathname}`} />
 	<meta name="twitter:image" property="og:image" content={`${$host}${imageUrl}-1350.webp`} />
 </svelte:head>

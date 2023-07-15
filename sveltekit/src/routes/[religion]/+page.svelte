@@ -11,7 +11,7 @@
 	/>
 
 	<div id="content" class="leading mt-2 px">
-		{@html $religion.description}
+		{@html $religion.content}
 
 		<div id="content-links" class="mt-2">
 			<a class="inline-block text-primary" href={`/${$religion.slug}/videos`}>Videos about {$religion.name} and related topics &rarr;</a>

@@ -1,14 +1,14 @@
 import {readable, writable} from 'svelte/store'
-import type {Religion} from '$lib/types'
+import type {Filter, Religion} from '$lib/types'
 
-const local = (key, startValue) => {
+const local = (key: string, startValue: any) => {
   const {subscribe, set} = writable(startValue)
 
   return {
     subscribe,
     set,
     useLocalStorage: () => {
-      const value = localStorage.getItem(key)
+      const value: string = String(localStorage.getItem(key))
       try {
         JSON.parse(value)
         set(JSON.parse(value))
@@ -28,9 +28,11 @@ const local = (key, startValue) => {
 }
 
 export const host = readable('https://battleofgods.net')
-export const religion = writable<Religion | undefined>(undefined)
+export const religion = writable<Religion | undefined>()
 export const religions = writable<Religion[]>([])
 export const siteName = readable('Battle of Gods')
+export const topic = writable(0)
+export const topics = writable<Filter[] | undefined>()
 export const user = local('user', null)
 export const width = writable(0)
 
