@@ -1,16 +1,37 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import {host, religion, siteName} from '$lib/store'
-	import Breadcrumb from '$lib/Breadcrumb.svelte'
+
+	interface BreadcrumbItem {
+    item: string;
+    name: string;
+    position: number;
+  }
 
 	export let alt: string
-  export let image: string
-  export let title: string
 	export let description: string|null = null
 	export let pages: {name: string, url: string}[] | null = null
+  export let image: string
+  export let title: string
 
+	$: breadcrumb = <BreadcrumbItem[]|null>null
 	$: imageUrl = `/images/${image}`
 	$: metaTitle = $siteName === title ? title : `${title} | ${$siteName}`
+
+	$: if (pages) {
+		breadcrumb = [
+      {
+        name: 'Home',
+        item: '/',
+        position: 1
+      },
+      ...pages.map((page, position) => ({
+        name: page.name,
+        item: page.url,
+        position: position + 2
+      }))
+    ];
+	}
 </script>
 
 <svelte:head>
@@ -20,6 +41,9 @@
 	<meta name="twitter:description" property="og:description" content={description ?? $religion?.description} />
 	<meta name="canonical" property="og:url" content={`${$host}${$page.url.pathname}`} />
 	<meta name="twitter:image" property="og:image" content={`${$host}${imageUrl}-1350.webp`} />
+	{#if breadcrumb}
+  <script type="application/ld+json">{JSON.stringify(breadcrumb)}</script>
+	{/if}
 </svelte:head>
 
 <div id="hero" class="relative text-center">
@@ -41,6 +65,15 @@
 	</div>
 </div>
 
-{#if Array.isArray(pages)}
-	<Breadcrumb {pages}/>
+{#if Array.isArray(breadcrumb)}
+	<ol id="breadcrumb" class="p-0" vocab="https://schema.org/" typeof="BreadcrumbList">
+		{#each breadcrumb as page (page.item)}
+			<li property="itemListElement" typeof="ListItem">
+				<a href={page.item} property="item" typeof="WebPage">
+					<span property="name">{page.name}</span>
+				</a>
+				<meta property="position" content={String(page.position)} />
+			</li>
+		{/each}
+	</ol>
 {/if}

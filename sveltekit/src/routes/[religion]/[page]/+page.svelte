@@ -6,7 +6,7 @@
   export let data: Page
 
   const religionLink = `/${$religion?.slug}`
-  const pages = [
+  $: pages = [
     {name: String($religion?.name), url: religionLink},
     {name: data.title, url: `${religionLink}/${data.slug}`}
   ]

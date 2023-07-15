@@ -49,7 +49,7 @@
 	});
 
   const religionLink = `/${$religion?.slug}`
-  const pages = [
+  $: pages = [
     {name: String($religion?.name), url: religionLink},
     {name: 'Videos', url: `${religionLink}/videos`}
   ]
