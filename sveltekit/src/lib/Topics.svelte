@@ -11,7 +11,7 @@
 	});
 </script>
 
-{#if Array.isArray($topics) && $topics[0]}
+{#if Array.isArray($topics) && $topics.length > 1}
   <div id="filters" class="mt-2 text-center">
     <div class="inline-block input">
       <label for="select-topic" class="block">Topics</label>
