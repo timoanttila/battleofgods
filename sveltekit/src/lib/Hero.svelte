@@ -31,6 +31,7 @@
 		width="1350"
 		height="500"
 		decoding="async"
+		loading="eager"
 		aria-hidden="true"
 	/>
 	<div id="hero-content" class="absolute bottom-6 left-0 text-white w-full">
