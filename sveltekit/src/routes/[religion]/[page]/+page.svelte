@@ -18,7 +18,7 @@
   description={data.description}
   image={$religion.slug}
   {pages}
-  title={`What Christianity teaches about ${data.title}`}
+  title={`What ${$religion?.name} teaches about ${data.title}`}
   />
 
   <div id="content" class="leading mt-1 px">{@html data.content}</div>

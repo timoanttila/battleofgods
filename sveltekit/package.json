@@ -1,7 +1,7 @@
 {
 	"name": "battleofgods-front",
-	"version": "1.0.1",
-	"description": "Personal website with many different content types and support for Markdown and SCSS. Built on Nuxt 3.",
+	"version": "1.0.2",
+	"description": "",
 	"homepage": "https://battleofgods.net",
 	"bugs": "https://github.com/timoanttila/battleofgods/issues",
 	"author": {
