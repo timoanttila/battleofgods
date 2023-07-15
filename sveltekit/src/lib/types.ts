@@ -7,6 +7,18 @@ export interface Filter extends Basic {
   total: number
 }
 
+export interface Page {
+  content: string
+  created: string
+  description: string
+  id: number
+  religion_id: number
+  slug: string
+  title: string
+  topic_id: number
+  updated: string
+}
+
 export interface Religion extends Basic {
   content: string
   description: string

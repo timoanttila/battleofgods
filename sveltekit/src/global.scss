@@ -99,6 +99,26 @@ p {
   }
 }
 
+#breadcrumb {
+  margin: 5px 0 0 15px;
+
+  li {
+    display: inline-block;
+
+    &:not(:last-child):after {
+      content: '»';
+      display: inline;
+      font-size: 0.95em;
+      padding: 0 6px 0 0;
+    }
+  }
+
+  a {
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
 #filters {
   label {
     margin-bottom: 5px;

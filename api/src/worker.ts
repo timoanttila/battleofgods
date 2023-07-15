@@ -164,18 +164,12 @@ export default {
           return new Response('Religion is required.', {status: 400})
         }
 
-        bind = Number(url.searchParams.get('religion'))
-        if (bind < 1) {
-          return new Response('Religion ID is not valid.', {status: 400})
-        }
-
-        let sql = 'SELECT * FROM pages WHERE religion_id = ?'
-        binds.push(bind)
+        let sql = 'SELECT pages.*, religions.name religion_name FROM pages INNER JOIN religions ON pages.religion_id = religions.id WHERE religions.slug = ?'
+        binds.push(checkSlug(String(url.searchParams.get('religion'))))
 
         if (url.searchParams.get('slug')) {
-          bind = String(url.searchParams.get('slug'))
-          sql += ' AND slug = ?'
-          binds.push(checkSlug(bind))
+          sql += ' AND pages.slug = ?'
+          binds.push(checkSlug(String(url.searchParams.get('slug'))))
           results = await getData(env, sql, binds)
 
           if (!results?.length) {

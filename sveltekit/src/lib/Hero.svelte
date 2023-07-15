@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import {host, religion, siteName} from '$lib/store'
+	import Breadcrumb from '$lib/Breadcrumb.svelte'
 
 	export let alt: string
   export let image: string
   export let title: string
 	export let description: string|null = null
+	export let pages: {name: string, url: string}[] | null = null
 
 	$: imageUrl = `/images/${image}`
 	$: metaTitle = $siteName === title ? title : `${title} | ${$siteName}`
@@ -38,3 +40,7 @@
 		<h1 class="leading-tight m-0 mx-auto">{title}</h1>
 	</div>
 </div>
+
+{#if Array.isArray(pages)}
+	<Breadcrumb {pages}/>
+{/if}

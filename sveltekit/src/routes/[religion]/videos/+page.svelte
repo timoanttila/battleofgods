@@ -48,6 +48,12 @@
 		getVideos()
 	});
 
+  const religionLink = `/${$religion?.slug}`
+  const pages = [
+    {name: String($religion?.name), url: religionLink},
+    {name: 'Videos', url: `${religionLink}/videos`}
+  ]
+
   $: if ($topic) {
     getVideos(true)
   }
@@ -57,6 +63,7 @@
   <Hero
     alt={`Religion: ${$religion.name}`}
     image={$religion.slug}
+    {pages}
     title={`Videos about ${$religion.name} and related topics`}
   />
 
