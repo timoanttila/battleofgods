@@ -71,7 +71,7 @@
   margin: 1rem auto 1.5rem;
 }
 
-@media screen and (max-width:1350px) {
+@media screen and (max-width:1350px) and (min-width:1000px) {
 	#religions {
 		margin: 0 1.5rem;
 	}
