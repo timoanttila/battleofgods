@@ -173,6 +173,7 @@ export default {
           results = await getData(env, sql, binds)
 
           if (!results?.length) {
+            headers.status = 404
             return new Response('Page not found.', {status: 404})
           }
 
@@ -181,7 +182,8 @@ export default {
 
         results = await getData(env, `${sql} ORDER BY title ASC`, binds)
         if (!results?.length) {
-          return new Response(null, {status: 204})
+          headers.status = 204
+          return new Response(null, headers)
         }
 
         return new Response(JSON.stringify(results), headers)
@@ -250,7 +252,8 @@ export default {
 
         count = await queryCount(env, `videos${joins}`, sqlWhere, binds)
         if (!count) {
-          return new Response(null, {status: 204})
+          headers.status = 204
+          return new Response(null, headers)
         }
 
         results = await getData(env, `${query}${joins} ${sqlWhere} ORDER BY videos.created DESC LIMIT ${pageSize} OFFSET ${offset}`, binds)
@@ -288,7 +291,8 @@ export default {
             return new Response(JSON.stringify(results), headers)
           }
 
-          return new Response(null, {status: 204})
+          headers.status = 204
+          return new Response(null, headers)
         }
 
         return new Response(JSON.stringify(await getData(env, `SELECT * FROM authors ORDER BY ${order}`)), headers)
@@ -338,7 +342,8 @@ export default {
           results = await getData(env, `SELECT topics.id, topics.name, COUNT(${type}.id) total FROM topics ${join} WHERE ${type}.religion_id = ? GROUP BY topics.id ORDER BY topics.name ASC`, [bind])
 
           if (!results?.length) {
-            return new Response(null, {status: 204})
+            headers.status = 204
+            return new Response(null, headers)
           }
 
           return new Response(JSON.stringify(results), headers)
