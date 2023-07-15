@@ -1,6 +1,14 @@
 {
-	"name": "sveltekit",
-	"version": "0.0.1",
+	"name": "battleofgods-front",
+	"version": "1.0.0",
+	"description": "Personal website with many different content types and support for Markdown and SCSS. Built on Nuxt 3.",
+	"homepage": "https://battleofgods.net",
+	"bugs": "https://github.com/timoanttila/battleofgods/issues",
+	"author": {
+		"name": "Timo Anttila",
+		"email": "moro@tuspe.com",
+		"url": "https://timoanttila.com"
+	},
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
