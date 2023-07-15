@@ -1,6 +1,6 @@
 <script lang="ts">
   export let pages: any[] = []
-  let breadcrumb = [
+  $: breadcrumb = [
     {
       name: 'Home',
       item: '/',
