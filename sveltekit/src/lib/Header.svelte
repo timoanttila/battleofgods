@@ -1,12 +1,17 @@
 <script lang="ts">
   import { page } from '$app/stores'
-  import {religions, siteName, width} from '$lib/store'
+  import {religions, siteName, user, width} from '$lib/store'
+
   let menu: boolean = $width > 750 ? true : false
+  let profileLink = '/profile'
+  if (!$user?.sub) {
+    profileLink += '/login'
+  }
 </script>
 
 <header id="head" class="no-underline relative">
   <div id="site-brand" class="align-center flex">
-    <a class="inline-block" href="/" rel="home" title="Back to front page">
+    <a class="inline-block leading-tight text-primary" href="/" rel="home" title="Back to front page">
       <strong>{$siteName}</strong>
     </a>
   </div>
@@ -19,12 +24,16 @@
   </button>
 
   <nav id="menu" class:active={menu}>
-    <ul class="m-0 p-0">
+    <ul class="leading-tight m-0 p-0">
       {#each $religions as religion}
         <li class="inline-block">
           <a class="block" href={`/${religion.slug}`} on:click={() => (menu = false)} title={`What is ${religion.name}?`} class:active={$page.params?.religion === religion.slug}><strong>{religion.name}</strong></a>
         </li>
       {/each}
+
+      <li class="inline-block">
+        <a class="block" href={profileLink} on:click={() => (menu = false)} title="User profile"><strong>{$user?.sub ? 'Profile' : 'Sign In'}</strong></a>
+      </li>
     </ul>
   </nav>
 </header>

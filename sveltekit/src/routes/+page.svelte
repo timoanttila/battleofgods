@@ -1,16 +1,9 @@
 <script lang="ts">
-  import {religions} from '$lib/store'
-  import Hero from '$lib/Hero.svelte'
+  import { hero, heroDefault, religions } from '$lib/store'
+	$hero = {...heroDefault}
 </script>
 
-<Hero
-	alt="A monk sits atop a large rock, looking out at the majestic castle in the distance. The sky is filled with white clouds and a flock of birds flying by."
-	description="There are many religions in the world, but which one is the real truth? Join us in exploring religions, teachings and historical findings to find the truth and your own path."
-	image="battle-of-gods"
-	title="Battle of Gods"
-/>
-
-<div id="about" class="mb-3 mt-3 mx-auto px text-center">There are many religions in the world, but what is the truth? Who holds the answers? What does history reveal? Let's look for answers together and get to know the teachings, experiences, and historical evidence of the world's largest religions. Open your mind to incredible discoveries and great insights.</div>
+<div id="about" class="mb-3 mx-auto px text-center">There are many religions in the world, but what is the truth? Who holds the answers? What does history reveal? Let's look for answers together and get to know the teachings, experiences, and historical evidence of the world's largest religions. Open your mind to incredible discoveries and great insights.</div>
 
 <div id="religions" class="gap grid no-underline">
 	{#each $religions as religion}

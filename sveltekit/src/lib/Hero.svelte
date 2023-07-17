@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import {host, religion, siteName} from '$lib/store'
+	import { hero, host, religion, siteName } from '$lib/store'
 
 	interface BreadcrumbItem {
     item: string;
@@ -8,37 +8,33 @@
     position: number;
   }
 
-	export let alt: string
-	export let description: string|null = null
-	export let pages: {name: string, url: string}[] | null = null
-  export let image: string
-  export let title: string
-
 	$: breadcrumb = <BreadcrumbItem[]|null>null
-	$: imageUrl = `/images/${image}`
-	$: metaTitle = $siteName === title ? title : `${title} | ${$siteName}`
+	$: imageUrl = `/images/${$hero?.image}`
+	$: metaTitle = $siteName === $hero?.title ? $hero?.title : `${$hero?.title} | ${$siteName}`
 
-	$: if (pages) {
+	$: if ($hero?.pages) {
 		breadcrumb = [
       {
         name: 'Home',
         item: '/',
         position: 1
       },
-      ...pages.map((page, position) => ({
+      ...$hero?.pages.map((page, position) => ({
         name: page.name,
         item: page.url,
         position: position + 2
       }))
     ];
+	} else {
+		breadcrumb = null
 	}
 </script>
 
 <svelte:head>
 	<title>{metaTitle}</title>
-	<meta name="twitter:title" property="og:title" content={title} />
-	<meta name="description" content={description ?? $religion?.description} />
-	<meta name="twitter:description" property="og:description" content={description ?? $religion?.description} />
+	<meta name="twitter:title" property="og:title" content={$hero?.title} />
+	<meta name="description" content={$hero?.description ?? $religion?.description} />
+	<meta name="twitter:description" property="og:description" content={$hero?.description ?? $religion?.description} />
 	<meta name="canonical" property="og:url" content={`${$host}${$page.url.pathname}`} />
 	<meta name="twitter:image" property="og:image" content={`${$host}${imageUrl}-1350.webp`} />
 	{#if breadcrumb}
@@ -53,15 +49,15 @@
 		srcset={`${imageUrl}-400.webp 400w, ${imageUrl}-635.webp 635w, ${imageUrl}-1350.webp 1350w`}
 		sizes="(max-width: 500px) 400px, (max-width: 768px) 635px, 1350px"
 		src={`${imageUrl}-1350.webp`}
-		{alt}
+		alt={$hero?.alt}
 		width="1350"
 		height="500"
 		decoding="async"
 		loading="eager"
 		aria-hidden="true"
 	/>
-	<div id="hero-content" class="absolute bottom-6 left-0 text-white w-full">
-		<h1 class="leading-tight m-0 mx-auto">{title}</h1>
+	<div id="hero-content" class="absolute bottom-6 left-0 text-center w-full">
+		<h1 class="leading-tight m-0 mx-auto text-white">{$hero?.title}</h1>
 	</div>
 </div>
 

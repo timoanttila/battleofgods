@@ -1,3 +1,21 @@
+export interface HeroData {
+  alt: string
+  description?: string
+  pages?: {name: string; url: string}[]
+  image: string
+  title: string
+}
+
+export interface UserInfo {
+  accessTokenExpiration: number
+  idTokenExpiration: number
+  key: string
+  sub: string
+  email_verified: boolean
+  nickname: string
+  email: string
+}
+
 export interface Basic {
   id: number
   name: string
@@ -62,4 +80,9 @@ export interface VideoMeta {
   page: number
   pages: number
   prev?: number
+}
+
+export interface ResultData {
+  message?: string
+  error?: string
 }

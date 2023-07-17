@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { SvelteToast } from '@zerodevx/svelte-toast';
 	import { fetchData, religions, user, width } from '$lib/store';
 	import type {Religion} from '$lib/types'
 	import Header from '$lib/Header.svelte'
+	import Hero from '$lib/Hero.svelte'
 
 	export let data: Religion[];
 	religions.set(data)
@@ -24,19 +24,19 @@
 <div id="wrap" class="flex">
 	<main class="block container mx-auto">
 		<Header/>
-		<slot />
+		<Hero />
+		<div id="content" class="leading mt-2 px">
+			<slot />
+		</div>
 	</main>
 
 	<footer class="bg-primary block">
-		<div class="container mx-auto text-center text-white">
-			Created by <a class="no-underline text-white" href="https://timoanttila.com/">Timo Anttila</a>, <a class="no-underline text-white" href="https://tuspe.com/">Tuspe Design Oy</a>
+		<div class="container mx-auto px text-center text-white">
+			<p><small>Created by <a class="text-white" href="https://timoanttila.com/">Timo Anttila</a>, <a class="text-white" href="https://tuspe.com/">Tuspe Design Oy</a></small><br>
+			<small><a class="text-white" href="/privacy" rel="nofollow" title="GDPR compliance statement">Data protection by design and by default</a></small></p>
 		</div>
 	</footer>
 </div>
-
-	{#if browser}
-		<SvelteToast />
-	{/if}
 {/if}
 
 <style type="text/scss">

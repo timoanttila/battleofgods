@@ -1,5 +1,5 @@
 import {readable, writable} from 'svelte/store'
-import type {Filter, Religion} from '$lib/types'
+import type {Filter, HeroData, Religion} from '$lib/types'
 
 const local = (key: string, startValue: any) => {
   const {subscribe, set} = writable(startValue)
@@ -27,6 +27,7 @@ const local = (key: string, startValue: any) => {
   }
 }
 
+export const hero = writable<HeroData | undefined>()
 export const host = readable('https://battleofgods.net')
 export const religion = writable<Religion | undefined>()
 export const religions = writable<Religion[]>([])
@@ -35,6 +36,13 @@ export const topic = writable(0)
 export const topics = writable<Filter[] | undefined>()
 export const user = local('user', null)
 export const width = writable(0)
+
+export const heroDefault = {
+  alt: 'A monk sits atop a large rock, looking out at the majestic castle in the distance. The sky is filled with white clouds and a flock of birds flying by.',
+  image: 'battle-of-gods',
+  description: 'There are many religions in the world, but which one is the real truth? Join us in exploring religions, teachings and historical findings to find the truth and your own path.',
+  title: String(siteName)
+}
 
 export const fetchData = async (query: string, method: string = 'GET', data: object | null = null) => {
   const url = `https://api.battleofgods.net/${query}`
