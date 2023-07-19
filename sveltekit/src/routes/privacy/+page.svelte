@@ -4,7 +4,8 @@
   $hero = {
     ...$heroDefault,
     title: 'Data protection by design and by default',
-    description: 'At Battle of Gods, we take your privacy and data protection seriously. This GDPR compliance statement outlines how we handle and protect your personal information.'
+    description: 'At Battle of Gods, we take your privacy and data protection seriously. This GDPR compliance statement outlines how we handle and protect your personal information.',
+    pages: [{name: 'Privacy', url: '/privacy'}]
   }
 
   const date = '2023-07-17T17:45:42.000Z'

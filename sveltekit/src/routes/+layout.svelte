@@ -25,7 +25,7 @@
 	<main class="block container mx-auto">
 		<Header/>
 		<Hero />
-		<div id="content" class="leading mt-2 px">
+		<div id="content" class="leading mt-1 px">
 			<slot />
 		</div>
 	</main>
