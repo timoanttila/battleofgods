@@ -41,7 +41,7 @@ export const heroDefault = readable<HeroData>({
   alt: 'A monk sits atop a large rock, looking out at the majestic castle in the distance. The sky is filled with white clouds and a flock of birds flying by.',
   image: 'battle-of-gods',
   description: 'There are many religions in the world, but which one is the real truth? Join us in exploring religions, teachings and historical findings to find the truth and your own path.',
-  title: String(siteName)
+  title: 'Battle of Gods'
 })
 
 export const fetchData = async (query: string, method: string = 'GET', data: object | null = null, key: string | null = null) => {
