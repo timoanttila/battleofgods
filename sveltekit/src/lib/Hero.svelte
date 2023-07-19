@@ -11,6 +11,7 @@
 	$: breadcrumb = <BreadcrumbItem[]|null>null
 	$: imageUrl = `/images/${$hero?.image}`
 	$: metaTitle = $siteName === $hero?.title ? $hero?.title : `${$hero?.title} | ${$siteName}`
+	$: ldjson = <string|null>null
 
 	$: if ($hero?.pages) {
 		breadcrumb = [
@@ -25,8 +26,8 @@
         position: position + 2
       }))
     ];
-	} else {
-		breadcrumb = null
+
+		ldjson = `<script type="application/ld+json">${JSON.stringify(breadcrumb)}${'<'}/script>`
 	}
 </script>
 
@@ -37,9 +38,7 @@
 	<meta name="twitter:description" property="og:description" content={$hero?.description ?? $religion?.description} />
 	<meta name="canonical" property="og:url" content={`${$host}${$page.url.pathname}`} />
 	<meta name="twitter:image" property="og:image" content={`${$host}${imageUrl}-1350.webp`} />
-	{#if breadcrumb}
-  <script type="application/ld+json">{JSON.stringify(breadcrumb)}</script>
-	{/if}
+	{@html ldjson}
 </svelte:head>
 
 <div id="hero" class="relative text-center">

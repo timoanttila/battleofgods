@@ -26,10 +26,9 @@
   const getComments = () => {
     comments = [];
     fetchData(query).then((result: Comment[]) => {
-      comments = result.map(comment => ({
-        ...comment,
-        formattedDate: dayjs(comment.created).format('DD.MM.YYYY')
-      }));
+      if (Array.isArray(result) && result.length) {
+        comments = result
+      }
     });
   };
 
@@ -104,7 +103,7 @@
             <div class="comment-content">{comment.content}</div>
             <div class="comment-info flex justify-between">
               <span class="block">{comment.userName}</span>
-              <time class="block" datetime={comment.created}>{comment.formattedDate}</time>
+              <time class="block" datetime={comment.created}>{dayjs(comment.created).format('DD.MM.YYYY')}</time>
             </div>
           </div>
         {/each}

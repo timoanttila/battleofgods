@@ -24,6 +24,12 @@
   }
 </script>
 
+<svelte:head>
+  <meta content={data.created} name="pubdate" property="og:pubdate"/>
+  <meta content={data.created} property="article:published_time"/>
+  <meta content={data.updated} name="revised" property="article:modified_time"/>
+</svelte:head>
+
 {@html data.content}
 
 <PageEdit content={data.content} id={data.id}/>
