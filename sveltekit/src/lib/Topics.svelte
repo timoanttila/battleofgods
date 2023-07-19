@@ -6,7 +6,7 @@
 
   onMount(async () => {
     if (!Array.isArray($topics)) {
-      topics.set(await fetchData(`topics?religion=${$religion?.id}&type=${type}`))
+      topics.set(await fetchData(`religions/${$religion?.id}/topics/${type}`))
     }
 	});
 </script>

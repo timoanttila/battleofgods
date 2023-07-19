@@ -2,7 +2,7 @@
   import { hero, heroDefault } from '$lib/store'
 
   $hero = {
-    ...heroDefault,
+    ...$heroDefault,
     title: 'Data protection by design and by default',
     description: 'At Battle of Gods, we take your privacy and data protection seriously. This GDPR compliance statement outlines how we handle and protect your personal information.'
   }

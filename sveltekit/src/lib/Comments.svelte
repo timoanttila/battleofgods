@@ -6,11 +6,11 @@
 
   interface Comment {
     created: string;
-    creator_name: string;
+    userName: string;
     creator: number;
     formattedDate: string;
     id: number;
-    message: string;
+    content: string;
   }
 
   interface CommentData {
@@ -20,84 +20,110 @@
 
   export let id: number;
 
-  let comments: Comment[] = [], meta: VideoMeta|null = null, query = `comments/${id}`
+  $: comments = <Comment[]>[]
+  let query = `comments/${id}`
 
   const getComments = () => {
     comments = [];
-    fetchData(query).then((result: CommentData) => {
-      if (!result?.meta) {
-        return
-      }
-
-      meta = result.meta
-
-      if (result.meta.count) {
-        comments = result.data.map(comment => ({
-          ...comment,
-          formattedDate: dayjs(comment.created).format('DD.MM.YYYY')
-        }));
-      }
+    fetchData(query).then((result: Comment[]) => {
+      comments = result.map(comment => ({
+        ...comment,
+        formattedDate: dayjs(comment.created).format('DD.MM.YYYY')
+      }));
     });
   };
 
   $: if (id) {
-    query = `comments/${id}`
+    query = `pages/${id}/comments`
     getComments()
   }
 
-  let message = ''
+  let content = '', loading = false
 
   const newComment = () => {
-    fetchData(query, 'POST', {page_id: id, user_id: $user.sub, message}).then((result: ResultData) => {
+    if ($user === null) {
+      toastMessage('You must be logged in to comment.', 2)
+      return
+    }
+
+    if (!content.length) {
+      toastMessage('Please enter a message.', 2)
+      return
+    }
+
+    loading = true
+
+    fetchData(query, 'POST', {pageId: id, userId: $user.sub, userName: $user.nickname, content}, $user.key).then((result: ResultData) => {
       if (result?.message) {
         toastMessage(result.message, 1)
       } else if (result?.error) {
         toastMessage(result.error, 2)
+        getComments()
       } else {
         toastMessage('Unfortunately, sending a comment was not successful.', 2)
       }
+    }).finally(() => {
+      loading = false
     })
   }
 </script>
 
-<div class="border-top mt-2">
-  <h2 class="mb-2 mt-2">Comments</h2>
+{#if $user?.sub}
+  <div class="border-top mt-2">
+    <h2 class="mb-0 mt-2">Comments</h2>
 
-  {#if meta}
-    <div id="comments-count">
-      {#if meta.count}
-        The article has {meta.count} comment(s).
-      {:else}
-        <p>Be the first to comment on the article.</p>
-      {/if}
-    </div>
-  {/if}
-
-  <details>
-    <summary>Leave a comment</summary>
-    <form on:submit|preventDefault={() => newComment()} class="content mt-1">
-      <div class="input">
-        <textarea id="comment-message" bind:value={message} minlength="10" maxlength="1000" required></textarea>
-        <label for="comment-message">Message</label>
+    {#if Array.isArray(comments)}
+      <div id="comments-count">
+        {#if comments.length}
+          The article has {comments.length} comment(s).
+        {:else}
+          <p>Be the first to comment on the article.</p>
+        {/if}
       </div>
+    {/if}
 
-      <div class="form-actions mt-1 text-right">
-        <button class="bg-primary btn p text-white" type="submit">Send</button>
-      </div>
-    </form>
-  </details>
-
-  {#if comments && comments.length}
-    <div id="comments">
-      {#each comments as comment}
-        <div class="comment">
-          <header>
-            <span class="block">{comment.creator_name}</span>
-            <time class="block" datetime={comment.created}>{comment.formattedDate}</time>
-          </header>
-          <div class="comment-content">{comment.message}</div>
+    <details class="mb-2 mt-1">
+      <summary>Leave a comment</summary>
+      <form on:submit|preventDefault={() => newComment()} class="content mt-1">
+        <div class="input">
+          <textarea id="comment-message" bind:value={content} minlength="10" maxlength="1000" required></textarea>
+          <label for="comment-message">Message</label>
         </div>
-      {/each}
-    </div>
-  {/if}
-</div>
+
+        <div class="flex form-actions mt-1 justify-between text-right">
+          <button on:click|preventDefault={() => content = ''} class="bg-black btn p text-white" type="submit">Send</button>
+          <button class="bg-primary btn p text-white" type="submit" disabled={!$user || loading}>Send</button>
+        </div>
+      </form>
+    </details>
+
+    {#if Array.isArray(comments) && comments.length}
+      <div id="comments">
+        {#each comments as comment}
+          <div class="comment">
+            <div class="comment-content">{comment.content}</div>
+            <div class="comment-info flex justify-between">
+              <span class="block">{comment.userName}</span>
+              <time class="block" datetime={comment.created}>{comment.formattedDate}</time>
+            </div>
+          </div>
+        {/each}
+      </div>
+    {/if}
+  </div>
+{/if}
+
+<style lang="scss" scoped>
+  .comment {
+    border: 1px solid var(--border-light);
+
+    .comment-content,
+    .comment-info {
+      padding: 1rem;
+    }
+
+    .comment-info {
+      border-top: 1px solid var(--border-light);
+    }
+  }
+</style>

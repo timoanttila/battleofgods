@@ -37,19 +37,29 @@ export const topics = writable<Filter[] | undefined>()
 export const user = local('user', null)
 export const width = writable(0)
 
-export const heroDefault = {
+export const heroDefault = readable<HeroData>({
   alt: 'A monk sits atop a large rock, looking out at the majestic castle in the distance. The sky is filled with white clouds and a flock of birds flying by.',
   image: 'battle-of-gods',
   description: 'There are many religions in the world, but which one is the real truth? Join us in exploring religions, teachings and historical findings to find the truth and your own path.',
   title: String(siteName)
-}
+})
 
-export const fetchData = async (query: string, method: string = 'GET', data: object | null = null) => {
+export const fetchData = async (query: string, method: string = 'GET', data: object | null = null, key: string | null = null) => {
+  if (key) {
+    const token = localStorage.getItem(`${key}.accessToken`)
+    if (token) {
+      key = token
+    } else {
+      return {error: 'Token is not valid.'}
+    }
+  }
+
   const url = `https://api.battleofgods.net/${query}`
   const headers = {
     'Content-Type': 'application/json',
     'Tuspe-Api': 'f5913925-a526-49f5-bcd9-351117375db3',
-    'cache-control': 'max-age=21600'
+    'cache-control': 'max-age=21600',
+    ...(key ? {Authorization: `Bearer ${key}`} : undefined)
   }
 
   const options: RequestInit = {

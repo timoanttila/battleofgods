@@ -3,7 +3,7 @@
   import { hero, heroDefault, user } from '$lib/store'
 
   $hero = {
-    ...heroDefault,
+    ...$heroDefault,
     title: `Welcome, ${$user.nickname}`,
     description: ''
   }
@@ -52,10 +52,14 @@
     div {
       margin-top: 1rem;
     }
+
+    &:first-child summary {
+      border-top: 1px solid var(--border-light);
+    }
   }
 
   summary {
-    border-bottom: 1px solid #bbb;
+    border-bottom: 1px solid var(--border-light);
     cursor: pointer;
     padding: 1rem;
   }

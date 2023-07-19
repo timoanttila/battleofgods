@@ -7,20 +7,22 @@
 
   export let content: string
   export let id: number
-  export let type: 'pages'|'religion' = 'pages'
+  export let type: 'pages'|'religions' = 'pages'
 
   let body = content, edit = false, loading = false
 
   const updateArticle = () => {
-    if (!$user?.sub || body.length || !id) {
+    if (!$user?.sub || !$user?.nickname || !body.length || !id) {
       toastMessage('Missing information', 2)
+      return
     }
 
     loading = true
 
-    fetchData(`/${type}/${id}`, 'PUT', {id, body, user: $user.sub}).then((result: any) => {
+    fetchData(`${type}/${id}`, 'PUT', {id, content: body, userId: $user.sub, userName: $user.nickname}, $user.key).then((result: any) => {
       if (result.message) {
-        toastMessage(result.message, 2)
+        edit = false
+        toastMessage(result.message, 1)
       } else if (result.error) {
         toastMessage(result.error, 2)
       }
@@ -35,18 +37,15 @@
 {/if}
 
 <div id="improve" class="border-top mt-3">
-  <div class="content gap grid mt-2 mx-auto">
-    <div>
-      <p>Is the article incomplete or misleading?<br>Help us improve this article.</p>
-    </div>
-
-    <div>
+  <div class="content mx-auto text-center">
+    <p>Is the article incomplete or misleading? Your feedback is highly valued, and if you're logged in, you can also modify the article or leave comments.</p>
+    <p>
       {#if $user?.sub}
         <button on:click={() => edit = !edit} class="bg-primary btn p text-white">Edit page</button>
       {:else}
         <a class="bg-primary btn p text-white" href="/profile/login" rel="nofollow">Sign In</a>
       {/if}
-    </div>
+    </p>
   </div>
 </div>
 
@@ -63,7 +62,8 @@
         bind:value={body}
         text="readonly-text-output"
       />
-      <div class="mt-1 text-right">
+      <div class="flex justify-between mt-1 text-right">
+        <button on:click={() => edit = false} class="bg-black btn p text-white">Cancel</button>
         <button on:click={() => updateArticle()} class="bg-primary btn p text-white" disabled={loading}>Save</button>
       </div>
     </div>
@@ -73,7 +73,8 @@
 <style lang="scss" scoped>
   #improve {
     .content {
-      max-width: 695px;
+      max-width: 500px;
+      padding: 2rem;
     }
   }
 

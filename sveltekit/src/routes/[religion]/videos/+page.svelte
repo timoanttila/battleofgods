@@ -1,14 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import dayjs from 'dayjs';
-	import { fetchData, hero, religion, topic, width } from '$lib/store'
-  import type {Video, VideoData, VideoMeta} from '$lib/types'
-  import Topics from '$lib/Topics.svelte'
+	import { fetchData, hero, religion, width } from '$lib/store'
+  import type {Video, VideoData, Filter, VideoMeta} from '$lib/types'
 
   let videos: Video[] = [],
   meta: VideoMeta = {count:0, limit: $width > 750 ? 20 : 10, page:1, pages:0},
   busy = false,
-  total = 0
+  total = 0,
+  topic = 0,
+  topics: Filter[] = []
 
   const getVideos = async (reset: boolean = false) => {
     busy = true
@@ -17,9 +18,9 @@
       videos = []
     }
 
-    let query = `videos?religion=${$religion?.id}&page=${meta.page}&limit=${meta.limit}`
-    if ($topic > 0) {
-      query += `&topic=${$topic}`
+    let query = `religions/${$religion?.id}/videos?page=${meta.page}&limit=${meta.limit}`
+    if (topic > 0) {
+      query += `&topic=${topic}`
     }
 
     const data: VideoData = await fetchData(query)
@@ -45,6 +46,7 @@
 
   onMount(async () => {
 		getVideos()
+    topics = await fetchData(`religions/${$religion?.id}/topics/videos`)
 	});
 
   const religionLink = `/${$religion?.slug}`
@@ -52,10 +54,6 @@
     {name: String($religion?.name), url: religionLink},
     {name: 'Videos', url: `${religionLink}/videos`}
   ]
-
-  $: if ($topic) {
-    getVideos(true)
-  }
 
   $hero = {
     alt: `Religion: ${$religion?.name}`,
@@ -70,7 +68,19 @@
   <p>Please note that the videos presented here reflect the opinions of their respective creators regarding religions and their teachings. The creators are solely responsible for the content of the videos, and they retain the copyrights to their work. We apologize if the content of the videos causes any distress or discomfort.</p>
 </div>
 
-<Topics type="videos"/>
+{#if Array.isArray(topics) && topics.length > 1}
+  <div id="filters" class="mt-2 text-center">
+    <div class="inline-block input">
+      <label for="select-topic" class="block">Topics</label>
+      <select bind:value={topic} on:change={() => getVideos(true)} id="select-topic" class="bg-white block w-full">
+        <option value={0}>No choice</option>
+        {#each topics as topic}
+          <option value={topic.id}>{topic.name} ({topic.total})</option>
+        {/each}
+      </select>
+    </div>
+  </div>
+{/if}
 
 <div id="videos-count" class="mb-2 mt-1 text-center"><strong aria-live="polite">Results: {total} / {meta.count} videos</strong></div>
 

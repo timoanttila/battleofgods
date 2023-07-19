@@ -8,7 +8,7 @@
 	$: links = <Page[]|null>null
 
 	const getLinks = async () => {
-		links = await fetchData(`pages?religion=${slug}`)
+		links = await fetchData(`religions/${slug}/pages`)
 	}
 
 	$: if (slug) {
@@ -43,5 +43,5 @@
 			</ul>
 		</div>
 
-	<PageEdit content={$religion.content} id={$religion.id} type="religion"/>
+	<PageEdit content={$religion.content} id={$religion.id} type="religions"/>
 {/if}

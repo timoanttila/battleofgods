@@ -18,9 +18,7 @@
     }
   })
 
-  import {PUBLIC_COGNITO_CLIENT_ID, PUBLIC_COGNITO_USER_POOL_ID} from '$env/static/public'
-
-  const poolData = { UserPoolId: PUBLIC_COGNITO_USER_POOL_ID, ClientId: PUBLIC_COGNITO_CLIENT_ID }
+  const poolData = { UserPoolId: import.meta.env.PUBLIC_COGNITO_USER_POOL_ID, ClientId: import.meta.env.PUBLIC_COGNITO_CLIENT_ID }
   const userPool = new CognitoUserPool(poolData);
 
   let Username = '', Password = '', Nickname = '', message = false, botCheck = '', verificationCode = '', loading = false, state = 1
@@ -34,7 +32,7 @@
     }
 
     $hero = {
-      ...heroDefault,
+      ...$heroDefault,
       title,
       description: ''
     }
@@ -106,7 +104,7 @@ const login = async () => {
       $user = {
         accessTokenExpiration: result.getAccessToken().getExpiration(),
         idTokenExpiration: result.getIdToken().getExpiration(),
-        key: `CognitoIdentityServiceProvider.${PUBLIC_COGNITO_CLIENT_ID}.${result.getIdToken().payload.sub}`,
+        key: `CognitoIdentityServiceProvider.${import.meta.env.PUBLIC_COGNITO_CLIENT_ID}.${result.getIdToken().payload.sub}`,
       }
 
       cognitoUser.getUserAttributes(function(err: any, userData: any) {

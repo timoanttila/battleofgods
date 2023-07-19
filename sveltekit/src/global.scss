@@ -13,7 +13,9 @@
 	box-sizing: border-box;
 }
 
-html {
+html,
+input,
+textarea {
 	font-family:
 		ui-sans-serif,
 		system-ui,
@@ -72,6 +74,13 @@ button {
 		&:hover {
 			text-decoration: underline;
 		}
+	}
+
+	&:disabled {
+		opacity: 0.5;
+		pointer-events: none;
+		pointer: not-allowed;
+		background-color: var(--border);
 	}
 }
 
@@ -395,6 +404,10 @@ body {
 	margin: 0;
 }
 
+.mb-0 {
+	margin-bottom: 0;
+}
+
 .mb-2 {
 	margin-bottom: 2rem;
 }
@@ -587,4 +600,8 @@ form {
 			}
 		}
 	}
+}
+
+.tox-tinymce {
+	min-height: 400px;
 }

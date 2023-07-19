@@ -1,6 +1,6 @@
 <script lang="ts">
   import { hero, heroDefault, religions } from '$lib/store'
-	$hero = {...heroDefault}
+	$hero = $heroDefault
 </script>
 
 <div id="about" class="mb-3 mx-auto px text-center">There are many religions in the world, but what is the truth? Who holds the answers? What does history reveal? Let's look for answers together and get to know the teachings, experiences, and historical evidence of the world's largest religions. Open your mind to incredible discoveries and great insights.</div>
@@ -72,8 +72,6 @@
 
 @media screen and (min-width:1000px) {
 	#religions {
-		margin: 0 1.5rem;
-
 		a:not(:hover) {
 			background-color: var(--white);
 			color: var(--primary);
