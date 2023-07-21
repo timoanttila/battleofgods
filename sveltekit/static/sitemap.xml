@@ -11,18 +11,38 @@
 <url>
   <loc>https://battleofgods.net/christianity</loc>
   <lastmod>2023-07-21 07:03:26+02:00</lastmod>
+  <changefreq>weekly</changefreq>
 </url>
 <url>
   <loc>https://battleofgods.net/islam</loc>
   <lastmod>2023-07-21 07:12:52+02:00</lastmod>
+  <changefreq>weekly</changefreq>
 </url>
 <url>
   <loc>https://battleofgods.net/buddhism</loc>
   <lastmod>2023-07-21 07:25:14+02:00</lastmod>
+  <changefreq>weekly</changefreq>
 </url>
 <url>
   <loc>https://battleofgods.net/hinduism</loc>
   <lastmod>2023-07-21 07:18:32+02:00</lastmod>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>https://battleofgods.net/christianity/videos</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>https://battleofgods.net/islam/videos</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>https://battleofgods.net/buddhism/videos</loc>
+  <changefreq>weekly</changefreq>
+</url>
+<url>
+  <loc>https://battleofgods.net/hinduism/videos</loc>
+  <changefreq>weekly</changefreq>
 </url>
 <url>
   <loc>https://battleofgods.net/christianity/death</loc>

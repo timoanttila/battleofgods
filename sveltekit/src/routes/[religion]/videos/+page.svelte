@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import dayjs from 'dayjs';
-	import { fetchData, hero, religion, width } from '$lib/store'
+  import {onMount} from 'svelte'
+  import dayjs from 'dayjs'
+  import {fetchData, hero, religion, width} from '$lib/store'
   import type {Video, VideoData, Filter, VideoMeta} from '$lib/types'
 
   let videos: Video[] = [],
-  meta: VideoMeta = {count:0, limit: $width > 750 ? 20 : 10, page:1, pages:0},
-  busy = false,
-  total = 0,
-  topic = 0,
-  topics: Filter[] = []
+    meta: VideoMeta = {count: 0, limit: $width > 750 ? 20 : 10, page: 1, pages: 0},
+    busy = false,
+    total = 0,
+    topic = 0,
+    topics: Filter[] = []
 
   const getVideos = async (reset: boolean = false) => {
     busy = true
@@ -45,22 +45,24 @@
   }
 
   onMount(async () => {
-		getVideos()
+    getVideos()
     topics = await fetchData(`religions/${$religion?.id}/topics/videos`)
-	});
+  })
 
-  const religionLink = `/${$religion?.slug}`
-  $: pages = [
-    {name: String($religion?.name), url: religionLink},
-    {name: 'Videos', url: `${religionLink}/videos`}
-  ]
+  $: {
+    const religionLink = `/${$religion?.slug}`
+    const pages = [
+      {name: String($religion?.name), url: religionLink},
+      {name: 'Videos', url: `${religionLink}/videos`}
+    ]
 
-  $hero = {
-    alt: `Religion: ${$religion?.name}`,
-    description: 'Videos about theology, history and incredible miracles.',
-    image: String($religion?.slug),
-    pages,
-    title: `Videos about ${$religion?.name} and related topics`
+    $hero = {
+      alt: `Religion: ${$religion?.name}`,
+      description: 'Videos about theology, history and incredible miracles.',
+      image: String($religion?.slug),
+      pages,
+      title: `Videos about ${$religion?.name} and related topics`
+    }
   }
 </script>
 
@@ -90,7 +92,7 @@
       <div aria-posinset={index + 1} aria-setsize={total} aria-labelledby={`title-${video.id}`}>
         <a href={video.video_url} aria-label={`${$religion?.name} on YouTube: ${video.video_title}`}>
           <div class="video-image" aria-hidden="true">
-            <img class="block h-full object-cover rounded w-full" src={video.video_image} alt={`YouTube: ${video.video_title}`} width=320 height=180 decoding="async" loading="lazy" aria-hidden="true"/>
+            <img class="block h-full object-cover rounded w-full" src={video.video_image} alt={`YouTube: ${video.video_title}`} width="320" height="180" decoding="async" loading="lazy" aria-hidden="true" />
           </div>
 
           <div id={`title-${video.id}`} class="video-name">{video.video_title}</div>
