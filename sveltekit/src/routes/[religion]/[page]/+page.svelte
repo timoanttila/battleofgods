@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { hero, religion } from '$lib/store'
-  import Comments from '$lib/Comments.svelte'
+  import { hero, religion, user } from '$lib/store'
   import PageEdit from '$lib/PageEdit.svelte'
   import type {Page} from '$lib/types'
 
@@ -33,4 +32,9 @@
 {@html data.content}
 
 <PageEdit content={data.content} id={data.id}/>
-<Comments id={data.id}/>
+
+{#if $user?.sub || data.hasComments}
+  {#await import('$lib/Comments.svelte') then Module}
+    <Module.default id={data.id} />
+  {/await}
+{/if}

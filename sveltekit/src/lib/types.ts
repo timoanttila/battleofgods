@@ -29,6 +29,7 @@ export interface Page {
   content: string
   created: string
   description: string
+  hasComments: boolean
   id: number
   religion_id: number
   slug: string
