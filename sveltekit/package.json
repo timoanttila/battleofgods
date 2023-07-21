@@ -1,6 +1,6 @@
 {
 	"name": "battleofgods-front",
-	"version": "1.1.4",
+	"version": "1.1.5",
 	"description": "",
 	"homepage": "https://battleofgods.net",
 	"bugs": "https://github.com/timoanttila/battleofgods/issues",
@@ -36,12 +36,12 @@
 		"svelte-preprocess": "^5.0.4",
 		"tslib": "^2.6.0",
 		"typescript": "^5.1.6",
-		"vite": "^4.4.5"
+		"vite": "^4.4.6"
 	},
 	"type": "module",
 	"dependencies": {
 		"@tinymce/tinymce-svelte": "^1.0.1",
 		"amazon-cognito-identity-js": "^6.3.1",
-		"aws-sdk": "^2.1419.0"
+		"aws-sdk": "^2.1420.0"
 	}
 }
