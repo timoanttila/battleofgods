@@ -17,6 +17,7 @@ export interface Env {
 export interface Page extends Basic {
   content: string
   description: string
+  hasComments: boolean
   parentId?: string | number
   religionId: string
   slug: string
