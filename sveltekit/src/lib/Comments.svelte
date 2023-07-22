@@ -1,43 +1,44 @@
 <script lang="ts">
-  import dayjs from 'dayjs';
-  import { fetchData, user } from '$lib/store';
-  import { toastMessage } from '$lib/toast'
-  import type { ResultData, VideoMeta } from '$lib/types';
+  import dayjs from 'dayjs'
+  import {fetchData, user} from '$lib/store'
+  import {toastMessage} from '$lib/toast'
+  import type {ResultData, VideoMeta} from '$lib/types'
 
   interface Comment {
-    created: string;
-    userName: string;
-    creator: number;
-    formattedDate: string;
-    id: number;
-    content: string;
+    created: string
+    userName: string
+    creator: number
+    formattedDate: string
+    id: number
+    content: string
   }
 
   interface CommentData {
-    data: Comment[];
-    meta: VideoMeta;
+    data: Comment[]
+    meta: VideoMeta
   }
 
-  export let id: number;
+  export let id: number
 
   $: comments = <Comment[]>[]
   let query = `comments/${id}`
 
   const getComments = () => {
-    comments = [];
+    comments = []
     fetchData(query).then((result: Comment[]) => {
       if (Array.isArray(result) && result.length) {
         comments = result
       }
-    });
-  };
+    })
+  }
 
   $: if (id) {
     query = `pages/${id}/comments`
     getComments()
   }
 
-  let content = '', loading = false
+  let content = '',
+    loading = false
 
   const newComment = () => {
     if ($user === null) {
@@ -52,18 +53,20 @@
 
     loading = true
 
-    fetchData(query, 'POST', {pageId: id, userId: $user.sub, userName: $user.nickname, content}, $user.key).then((result: ResultData) => {
-      if (result?.message) {
-        toastMessage(result.message, 1)
-      } else if (result?.error) {
-        toastMessage(result.error, 2)
-        getComments()
-      } else {
-        toastMessage('Unfortunately, sending a comment was not successful.', 2)
-      }
-    }).finally(() => {
-      loading = false
-    })
+    fetchData(query, 'POST', {pageId: id, userId: $user.sub, userName: $user.nickname, content}, $user.key)
+      .then((result: ResultData) => {
+        if (result?.message) {
+          toastMessage(result.message, 1)
+        } else if (result?.error) {
+          toastMessage(result.error, 2)
+          getComments()
+        } else {
+          toastMessage('Unfortunately, sending a comment was not successful.', 2)
+        }
+      })
+      .finally(() => {
+        loading = false
+      })
   }
 </script>
 
@@ -85,13 +88,13 @@
       <summary>Leave a comment</summary>
       <form on:submit|preventDefault={() => newComment()} class="content mt-1">
         <div class="input">
-          <textarea id="comment-message" bind:value={content} minlength="10" maxlength="1000" required></textarea>
+          <textarea id="comment-message" bind:value={content} minlength="10" maxlength="1000" required />
           <label for="comment-message">Message</label>
         </div>
 
         <div class="flex form-actions mt-1 justify-between text-right">
-          <button on:click|preventDefault={() => content = ''} class="bg-black btn p text-white" type="submit">Send</button>
-          <button class="bg-primary btn p text-white" type="submit" disabled={!$user || loading}>Send</button>
+          <button on:click|preventDefault={() => (content = '')} class="bg-black" type="submit">Send</button>
+          <button class="bg-green" type="submit" disabled={!$user || loading}>Send</button>
         </div>
       </form>
     </details>

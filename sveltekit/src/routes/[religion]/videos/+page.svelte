@@ -108,6 +108,6 @@
 
 {#if Array.isArray(videos) && videos[0] && meta.next}
   <div id="action-buttons" class="mt-3 text-center">
-    <button on:click={() => changePage(Number(meta.next))} class="bg-primary btn rounded text-white uppercase" disabled={!meta.next}>Load next {meta.limit} videos</button>
+    <button on:click={() => changePage(Number(meta.next))} class="bg-blue" disabled={!meta.next}>Load next {meta.limit} videos</button>
   </div>
 {/if}

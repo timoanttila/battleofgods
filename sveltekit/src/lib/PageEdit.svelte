@@ -1,15 +1,17 @@
 <script lang="ts">
-  import Editor from '@tinymce/tinymce-svelte';
-  import { fetchData, user } from '$lib/store'
-  import { browser } from '$app/environment';
-	import { SvelteToast } from '@zerodevx/svelte-toast';
-  import { toastMessage } from '$lib/toast'
+  import Editor from '@tinymce/tinymce-svelte'
+  import {fetchData, user} from '$lib/store'
+  import {browser} from '$app/environment'
+  import {SvelteToast} from '@zerodevx/svelte-toast'
+  import {toastMessage} from '$lib/toast'
 
   export let content: string
   export let id: number
-  export let type: 'pages'|'religions' = 'pages'
+  export let type: 'pages' | 'religions' = 'pages'
 
-  let body = content, edit = false, loading = false
+  let body = content,
+    edit = false,
+    loading = false
 
   const updateArticle = () => {
     if (!$user?.sub || !$user?.nickname || !body.length || !id) {
@@ -41,9 +43,9 @@
     <p>Is the article incomplete or misleading? Your feedback is highly valued, and if you're logged in, you can also modify the article or leave comments.</p>
     <p>
       {#if $user?.sub}
-        <button on:click={() => edit = !edit} class="bg-primary btn p text-white">Edit page</button>
+        <button on:click={() => (edit = !edit)} class="bg-blue">Edit page</button>
       {:else}
-        <a class="bg-primary btn p text-white" href="/profile/login" rel="nofollow">Sign In</a>
+        <a class="bg-blue" href="/profile/login" rel="nofollow">Sign In</a>
       {/if}
     </p>
   </div>
@@ -52,19 +54,10 @@
 {#if $user?.sub && edit}
   <div id="overlay" class="align-center flex">
     <div id="overlay-inner" class="bg-white mx-auto p-1 rounded">
-      <Editor
-        apiKey="dyqufq9qsq8xih8wock04xdi16c6u73370xlbbomblr4ysgm"
-        channel="5"
-        id="uuid"
-        inline={false}
-        disabled={false}
-        modelEvents="input change undo redo"
-        bind:value={body}
-        text="readonly-text-output"
-      />
+      <Editor apiKey="dyqufq9qsq8xih8wock04xdi16c6u73370xlbbomblr4ysgm" channel="5" id="uuid" inline={false} disabled={false} modelEvents="input change undo redo" bind:value={body} text="readonly-text-output" />
       <div class="flex justify-between mt-1 text-right">
-        <button on:click={() => edit = false} class="bg-black btn p text-white">Cancel</button>
-        <button on:click={() => updateArticle()} class="bg-primary btn p text-white" disabled={loading}>Save</button>
+        <button on:click={() => (edit = false)} class="bg-black">Cancel</button>
+        <button on:click={() => updateArticle()} class="bg-green" disabled={loading}>Save</button>
       </div>
     </div>
   </div>
@@ -79,7 +72,7 @@
   }
 
   #overlay {
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(0, 0, 0, 0.6);
     height: 100vh;
     left: 0;
     position: fixed;
@@ -92,14 +85,14 @@
     width: 95vw;
   }
 
-  @media screen and (min-width:800px) {
+  @media screen and (min-width: 800px) {
     #improve {
       .content {
         grid-template-columns: 1fr 1fr;
 
         div {
           &:first-child {
-            text-align: right
+            text-align: right;
           }
 
           &:last-child {
@@ -112,7 +105,7 @@
     }
   }
 
-  @media screen and (max-width:800px) {
+  @media screen and (max-width: 800px) {
     #improve {
       text-align: center;
     }

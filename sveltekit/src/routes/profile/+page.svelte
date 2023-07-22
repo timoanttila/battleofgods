@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { goto } from '$app/navigation'
-  import { hero, heroDefault, user } from '$lib/store'
+  import {goto} from '$app/navigation'
+  import {hero, heroDefault, user} from '$lib/store'
 
   $hero = {
     ...$heroDefault,
-    title: `Welcome, ${$user.nickname}`,
-    description: ''
+    description: '',
+    pages: [{name: 'Profile', url: '/profile'}],
+    title: `Welcome, ${$user.nickname}`
   }
 
   const logout = () => {
@@ -20,7 +21,7 @@
   <p>Please note that all submitted articles and messages undergo review before publication to maintain the platform's quality and standards.</p>
   <p>Thank you for joining us, and we're excited to see your contributions!</p>
 
-  <div class="mt-2 text-center"><button on:click={() => logout()} class="bg-black btn p text-white">Logout</button></div>
+  <div class="mt-2 text-center"><button on:click={() => logout()} class="bg-black">Logout</button></div>
 
   <div class="mt-2">
     <details>
