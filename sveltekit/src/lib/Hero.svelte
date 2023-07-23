@@ -27,7 +27,7 @@
       }))
     ]
 
-    ldjson = `<script type="application/ld+json">${JSON.stringify(breadcrumb)}${'<'}/script>`
+    ldjson = `<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":${JSON.stringify(breadcrumb)}}${'<'}/script>`
   } else {
     breadcrumb = null
     ldjson = ''
