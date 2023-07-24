@@ -1,11 +1,12 @@
 :root {
   --black: #000;
-  --border: #999;
+  --blue-bg: #d3e2fd;
   --border-light: #bbb;
+  --border: #999;
+  --link: #981601;
   --text-date: #333;
   --text: #202124;
   --white: #fff;
-  --blue-bg: #d3e2fd;
 }
 
 * {
@@ -15,7 +16,7 @@
 html,
 input,
 textarea {
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
 }
 
 a,
@@ -27,7 +28,7 @@ summary {
 
 a {
   &:not(.bg-blue):not(.bg-black):not(.bg-green):not(.text-dark) {
-    color: #0089c7;
+    color: var(--link);
   }
 
   &:visited {
@@ -94,7 +95,7 @@ button {
 }
 
 body {
-  background-color: #f2f2f2;
+  background-color: #f5f8fc;
   overflow-x: hidden;
 }
 
