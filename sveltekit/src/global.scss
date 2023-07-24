@@ -155,13 +155,6 @@ strong {
   font-weight: 700;
 }
 
-header select {
-  background-color: var(--white);
-  border: 1px solid var(--border);
-  height: 48px;
-  padding: 0.5rem 1rem;
-}
-
 footer {
   margin-top: 3rem;
   padding-top: 0.5rem;
@@ -304,6 +297,10 @@ p {
   .input {
     max-width: 300px;
   }
+}
+
+#head {
+  padding: 5px 1.5rem;
 }
 
 #head,
@@ -645,8 +642,6 @@ form {
 
 @media screen and (max-width: 750px) {
   #head {
-    padding: 5px 1.5rem;
-
     button {
       background-color: transparent;
       border: none;

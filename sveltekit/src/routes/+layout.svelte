@@ -2,6 +2,7 @@
   import {onMount} from 'svelte'
   import {browser} from '$app/environment'
   import {fetchData, religions, user, width} from '$lib/store'
+  import '/src/global.scss'
   import Header from '$lib/Header.svelte'
   import Hero from '$lib/Hero.svelte'
   import type {Religion} from '$lib/types'
@@ -40,7 +41,3 @@
     </footer>
   </div>
 {/if}
-
-<style type="text/scss">
-  @import '../global.scss';
-</style>
