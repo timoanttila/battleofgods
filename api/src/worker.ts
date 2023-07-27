@@ -14,6 +14,7 @@ export default {
     cors.set('Access-Control-Allow-Headers', 'Authorization, Cache-Control, Content-Type, Keep-Alive, Origin, Tuspe-Api, Upgrade-Insecure-Requests, User-Agent, X-Requested-With')
     cors.set('Access-Control-Allow-Credentials', 'true')
     cors.set('Access-Control-Max-Age', '21600')
+    cors.set('X-Robots-Tag', 'noindex, nofollow')
 
     const headers = {
       status: 200,
