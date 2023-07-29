@@ -3,6 +3,7 @@
   import {hero, host, religion, siteName} from '$lib/store'
 
   interface BreadcrumbItem {
+    '@type': string
     item: string
     name: string
     position: number
@@ -16,11 +17,13 @@
   $: if ($hero?.pages) {
     breadcrumb = [
       {
+        '@type': 'ListItem',
         name: 'Home',
         item: '/',
         position: 1
       },
       ...$hero?.pages.map((page, position) => ({
+        '@type': 'ListItem',
         name: page.name,
         item: page.url,
         position: position + 2
