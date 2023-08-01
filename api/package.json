@@ -11,7 +11,7 @@
     "@types/node": "^20.4.5",
     "itty-router": "^4.0.14",
     "typescript": "^5.1.6",
-    "wrangler": "^3.3.0"
+    "wrangler": "^3.4.0"
   },
   "dependencies": {
     "crypto-js": "^4.1.1",
