@@ -614,7 +614,7 @@ form {
   }
 }
 
-@media screen and (min-width: 750px) {
+@media screen and (min-width: 870px) {
   #head {
     display: flex;
     align-items: center;
@@ -641,7 +641,7 @@ form {
   }
 }
 
-@media screen and (max-width: 750px) {
+@media screen and (max-width: 870px) {
   #head {
     button {
       background-color: transparent;
