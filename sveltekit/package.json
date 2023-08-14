@@ -25,14 +25,14 @@
 		"@typescript-eslint/eslint-plugin": "^6.3.0",
 		"@typescript-eslint/parser": "^6.3.0",
 		"@zerodevx/svelte-toast": "^0.9.5",
-		"autoprefixer": "^10.4.14",
+		"autoprefixer": "^10.4.15",
 		"dayjs": "^1.11.9",
-		"eslint": "^8.46.0",
+		"eslint": "^8.47.0",
 		"eslint-plugin-svelte": "^2.32.4",
 		"prettier": "^3.0.1",
-		"sass": "^1.64.2",
-		"svelte": "^4.1.2",
-		"svelte-check": "^3.4.6",
+		"sass": "^1.65.1",
+		"svelte": "^4.2.0",
+		"svelte-check": "^3.5.0",
 		"svelte-preprocess": "^5.0.4",
 		"tslib": "^2.6.1",
 		"typescript": "^5.1.6",
@@ -41,7 +41,7 @@
 	"type": "module",
 	"dependencies": {
 		"@tinymce/tinymce-svelte": "^1.0.1",
-		"amazon-cognito-identity-js": "^6.3.1",
-		"aws-sdk": "^2.1431.0"
+		"amazon-cognito-identity-js": "^6.3.2",
+		"aws-sdk": "^2.1435.0"
 	}
 }
