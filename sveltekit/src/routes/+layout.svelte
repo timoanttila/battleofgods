@@ -33,8 +33,7 @@
     <footer class="bg-blue block">
       <div class="container mx-auto px text-center">
         <p>
-          <small>Created by <a class="text-dark" href="https://timoanttila.com/" title="Full Stack Web Developer Timo Anttila">Timo Anttila</a>, <a class="text-dark" href="https://tuspe.com/">Tuspe Design Oy</a></small><br />
-          <small><a class="text-dark" href="/privacy" rel="nofollow" title="GDPR compliance statement">Data protection by design and by default</a></small>
+          <small>Created by <a class="text-dark" href="https://timoanttila.com/" title="Full Stack Web Developer Timo Anttila">Timo Anttila</a>, <a class="text-dark" href="https://tuspe.com/">Tuspe Design Oy</a></small>
         </p>
       </div>
     </footer>

@@ -1,12 +1,8 @@
 <script lang="ts">
   import {page} from '$app/stores'
-  import {religions, siteName, user, width} from '$lib/store'
+  import {religions, siteName, width} from '$lib/store'
 
   let menu: boolean = $width > 750 ? true : false
-  let profileLink = '/profile'
-  if (!$user?.sub) {
-    profileLink += '/login'
-  }
 </script>
 
 <header id="head" class="no-underline relative">
@@ -30,10 +26,6 @@
           <a class="block" href={`/${religion.slug}`} on:click={() => (menu = false)} title={`What is ${religion.name}?`} class:active={$page.params?.religion === religion.slug}><strong>{religion.name}</strong></a>
         </li>
       {/each}
-
-      <li class="inline-block">
-        <a class="block" href={profileLink} on:click={() => (menu = false)} title="User profile"><strong>{$user?.sub ? 'Profile' : 'Sign In'}</strong></a>
-      </li>
     </ul>
   </nav>
 </header>
